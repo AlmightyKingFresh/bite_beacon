@@ -2,7 +2,7 @@ defmodule BiteBeaconWeb.FacilityLive.Index do
   use BiteBeaconWeb, :live_view
 
   alias BiteBeacon.Food_Facilities
-  alias BiteBeacon.Food_Facilities.Facility
+  alias BiteBeacon.FoodFacilities.Facility
 
   @impl true
   def mount(_params, _session, socket) do

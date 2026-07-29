@@ -1,4 +1,4 @@
-defmodule BiteBeacon.Food_Facilities.Facility do
+defmodule BiteBeacon.FoodFacilities.Facility do
   use Ecto.Schema
   import Ecto.Changeset
 

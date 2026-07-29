@@ -291,17 +291,16 @@ defmodule BiteBeaconWeb.CoreComponents do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
 
-                def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if field.errors != [], do: field.errors, else: []
 
-                  errors = if field.errors != [], do: field.errors, else: []
-
-                  assigns
-                  |> assign(field: nil, id: assigns.id || field.id)
-                  |> assign(:errors, Enum.map(errors, &translate_error(&1)))
-                  |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
-                  |> assign_new(:value, fn -> field.value end)
-                  |> input()
-                end
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> input()
+  end
 
   def input(%{type: "checkbox"} = assigns) do
     assigns =

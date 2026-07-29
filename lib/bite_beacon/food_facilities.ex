@@ -1,12 +1,12 @@
-defmodule BiteBeacon.Food_Facilities do
+defmodule BiteBeacon.FoodFacilities do
   @moduledoc """
-  The Food_Facilities context.
+  The FoodFacilities context.
   """
 
   import Ecto.Query, warn: false
   alias BiteBeacon.Repo
 
-  alias BiteBeacon.Food_Facilities.Facility
+  alias BiteBeacon.FoodFacilities.Facility
 
   @doc """
   Returns the list of facilities.
