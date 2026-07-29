@@ -1,23 +1,30 @@
-defmodule BiteBeacon.Accounts.User do
+defmodule BiteBeacon.Vendors.Vendor do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  schema "users" do
+  schema "vendors" do
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
-    field :user_name, :string
+    field :permit_id, :string
+    field :permit_status, :string
+    field :permit_approval_date, :utc_datetime
+    field :permit_application_received, :utc_datetime
+    field :prior_permit, :integer
+    field :permit_expiration_date, :utc_datetime
+    field :date_notice_of_intent_sent, :utc_datetime
+    field :name, :string
 
     timestamps(type: :utc_datetime)
   end
 
   @doc """
-  A user changeset for registration.
+  A vendor changeset for registration.
 
   It is important to validate the length of both email and password.
   Otherwise databases may truncate the email without warnings, which
@@ -39,23 +46,40 @@ defmodule BiteBeacon.Accounts.User do
       submitting the form), this option can be set to `false`.
       Defaults to `true`.
   """
-  def registration_changeset(user, attrs, opts \\ []) do
-    user
-    |> cast(attrs, [:email, :password, :user_name])
+  def registration_changeset(vendor, attrs, opts \\ []) do
+    vendor
+    |> cast(attrs, [
+      :email,
+      :password,
+      :name,
+      :permit_id,
+      :permit_status,
+      :permit_approval_date,
+      :permit_application_received,
+      :prior_permit,
+      :permit_expiration_date,
+      :date_notice_of_intent_sent
+    ])
+    |> validate_required([:permit_id, :permit_status, :email, :name, :password])
     |> validate_email(opts)
-    |> validate_user_name()
     |> validate_password(opts)
+    |> validate_name()
+    |> validate_permit_status()
+    |> unique_constraint([:permit_id])
   end
 
-  defp validate_user_name(changeset) do
+  defp validate_permit_status(changeset) do
     changeset
-    |> validate_required([:user_name])
-    |> validate_length(:user_name, min: 4, max: 15)
+    |> validate_inclusion(:permit_status, ["APPROVED, EXPIRED, REQUESTED, SUSPEND"])
+  end
+
+  defp validate_name(changeset) do
+    changeset
+    |> validate_length(:name, min: 2, max: 100)
   end
 
   defp validate_email(changeset, opts) do
     changeset
-    |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
     |> maybe_validate_unique_email(opts)
@@ -63,8 +87,7 @@ defmodule BiteBeacon.Accounts.User do
 
   defp validate_password(changeset, opts) do
     changeset
-    |> validate_required([:password])
-    |> validate_length(:password, min: 6, max: 72)
+    |> validate_length(:password, min: 8, max: 72)
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
@@ -82,8 +105,7 @@ defmodule BiteBeacon.Accounts.User do
       # If using Bcrypt, then further validate it is at most 72 bytes long
       |> validate_length(:password, max: 72, count: :bytes)
       # Hashing could be done with `Ecto.Changeset.prepare_changes/2`, but that
-      # i haven't weighed the pros and cons of doing so yet. For now, this function is fine since
-      #  it would keep the database transaction open longer and hurt performance.
+      # would keep the database transaction open longer and hurt performance.
       |> put_change(:hashed_password, Bcrypt.hash_pwd_salt(password))
       |> delete_change(:password)
     else
@@ -102,12 +124,12 @@ defmodule BiteBeacon.Accounts.User do
   end
 
   @doc """
-  A user changeset for changing the email.
+  A vendor changeset for changing the email.
 
   It requires the email to change otherwise an error is added.
   """
-  def email_changeset(user, attrs, opts \\ []) do
-    user
+  def email_changeset(vendor, attrs, opts \\ []) do
+    vendor
     |> cast(attrs, [:email])
     |> validate_email(opts)
     |> case do
@@ -117,7 +139,7 @@ defmodule BiteBeacon.Accounts.User do
   end
 
   @doc """
-  A user changeset for changing the password.
+  A vendor changeset for changing the password.
 
   ## Options
 
@@ -128,8 +150,8 @@ defmodule BiteBeacon.Accounts.User do
       validations on a LiveView form), this option can be set to `false`.
       Defaults to `true`.
   """
-  def password_changeset(user, attrs, opts \\ []) do
-    user
+  def password_changeset(vendor, attrs, opts \\ []) do
+    vendor
     |> cast(attrs, [:password])
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
@@ -138,18 +160,18 @@ defmodule BiteBeacon.Accounts.User do
   @doc """
   Confirms the account by setting `confirmed_at`.
   """
-  def confirm_changeset(user) do
+  def confirm_changeset(vendor) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    change(user, confirmed_at: now)
+    change(vendor, confirmed_at: now)
   end
 
   @doc """
   Verifies the password.
 
-  If there is no user or the user doesn't have a password, we call
+  If there is no vendor or the vendor doesn't have a password, we call
   `Bcrypt.no_user_verify/0` to avoid timing attacks.
   """
-  def valid_password?(%BiteBeacon.Accounts.User{hashed_password: hashed_password}, password)
+  def valid_password?(%BiteBeacon.Vendors.Vendor{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Bcrypt.verify_pass(password, hashed_password)
   end

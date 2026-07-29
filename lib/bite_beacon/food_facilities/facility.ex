@@ -27,7 +27,7 @@ defmodule BiteBeacon.FoodFacilities.Facility do
     field :zip_codes, :integer
     field :neighborhoods, :integer
 
-    belongs_to :vendor, BiteBeacon.Accounts.Vendor, type: :binary_id
+    belongs_to :vendor, BiteBeacon.Vendors.Vendor, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end

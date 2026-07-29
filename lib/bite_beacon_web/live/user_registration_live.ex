@@ -2,7 +2,7 @@ defmodule BiteBeaconWeb.UserRegistrationLive do
   use BiteBeaconWeb, :live_view
 
   alias BiteBeacon.Accounts
-  alias BiteBeacon.Accounts.User
+  alias BiteBeacon.Users.User
 
   def render(assigns) do
     ~H"""
