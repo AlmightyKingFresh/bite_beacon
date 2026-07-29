@@ -64,6 +64,7 @@ defmodule BiteBeacon.Accounts.Vendor do
     |> validate_email(opts)
     |> validate_password(opts)
     |> validate_name()
+    |> validate_permit_status()
     |> unique_constraint([:permit_id])
   end
 

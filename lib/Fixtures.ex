@@ -5,7 +5,7 @@ defmodule Fixtures do
   import Ecto.Query, warn: false
 
   alias BiteBeacon.Accounts.Vendor
-  alias BiteBeacon.Food_Facilities.Facility
+  alias BiteBeacon.FoodFacilities.Facility
   alias BiteBeacon.Repo
   alias NimbleCSV.RFC4180, as: CSV
   alias Faker.Internet, as: Fake
@@ -154,7 +154,6 @@ defmodule Fixtures do
             acc
           end
       end
-
       |> Enum.uniq_by(& &1.id)
 
     multi = Ecto.Multi.new()
@@ -203,8 +202,6 @@ defmodule Fixtures do
         ""
     end
   end
-
-
 
   defp to_utc(date_string) do
     date_format = "{D}/{M}/{YYYY}"

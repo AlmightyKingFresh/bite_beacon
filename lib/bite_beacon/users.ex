@@ -1,12 +1,12 @@
-defmodule BiteBeacon.Accounts do
+defmodule BiteBeacon.Users do
   @moduledoc """
-  The Accounts context.
+  The Users context.
   """
 
   import Ecto.Query, warn: false
   alias BiteBeacon.Repo
 
-  alias BiteBeacon.Accounts.{User, UserToken, UserNotifier}
+  alias BiteBeacon.Accounts.{User, UserToken, UserNotifier, Vendor}
 
   ## Database getters
 
