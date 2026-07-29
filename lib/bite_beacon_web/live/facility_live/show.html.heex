@@ -1,0 +1,29 @@
+<.header>
+  Facility <%= @facility.id %>
+  <:subtitle>This is a facility record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/facilities/#{@facility}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit facility</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list></.list>
+
+<.back navigate={~p"/facilities"}>Back to facilities</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="facility-modal"
+  show
+  on_cancel={JS.patch(~p"/facilities/#{@facility}")}
+>
+  <.live_component
+    module={BiteBeaconWeb.FacilityLive.FormComponent}
+    id={@facility.id}
+    title={@page_title}
+    action={@live_action}
+    facility={@facility}
+    patch={~p"/facilities/#{@facility}"}
+  />
+</.modal>

@@ -1,0 +1,126 @@
+<div class="bg-container">
+  <div class="bg">
+    <svg viewBox="85 20 1700 300" class="hero-svg">
+      <path
+        id="upward-curve"
+        d="M73.2,150c4-6.1,65.5-96.8,178.6-95.6c111.3,1.2,170.8,90.3,175.1,97"
+      />
+
+      <text class="top-text">
+        <textPath xlink:href="#upward-curve" startOffset="50%" text-anchor="middle">
+          Bite Beacon
+        </textPath>
+      </text>
+
+      <path
+        id="downward-curve"
+        d="M73.2,160c4,6.1,65.5,96.8,178.6,95.6c111.3-1.2,170.8-90.3,175.1-97"
+      />
+
+      <text class="bottom-text">
+        <textPath xlink:href="#downward-curve" startOffset="50%" text-anchor="middle">
+          Let's Eat!!
+        </textPath>
+      </text>
+    </svg>
+  </div>
+
+  <div class="vendor-login-content">
+    <.link class="vendor-link" href={~p"/vendors/log_in"}>
+      Vendors Log in here
+    </.link>
+  </div>
+
+  <div class="button-border">
+    <div class="button-base">
+      <button class="button" phx-click="go">Log In</button>
+    </div>
+  </div>
+</div>
+<style>
+          .bg-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+      }
+
+      .bg {
+        background-image: url("/images/front-page-189cf317656bc1ee06e9898e105ecdb1.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      .vendor-login-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding-top: 5cm;
+        padding-left: 17cm;
+      }
+
+      .button-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding-top: 2cm;
+        padding-right: 71cm;
+      }
+
+      .vendor-link {
+        z-index: 2;
+        position: relative;
+      }
+
+      .button-link {
+        z-index: 2;
+        position: relative;
+      }
+
+   
+
+  .button-border {
+    border: 8px solid #ffae70;
+    outline: 4px solid;
+    border-radius: 100%;
+  }
+
+  .button-base {
+    background-color: #75221c;
+    outline: 2px solid black;
+    border-radius: 100%;
+    padding-left: 6cm;
+  }
+
+  .button {
+    border-radius: 100%;
+    font-size: 32px;
+    outline: 2px solid black;
+    border: 4px solid;
+    border-left-color: #e7b8b4;
+    border-top-color: #f8c9c5;
+    border-bottom-color: #4e1814;
+    border-right-color: #79241e;
+    background-color: #bcb6b6;
+    cursor: pointer;
+    color: #b9afaf;
+    padding: 40px 60px;
+    transform: translateY(-20%);
+    font-family: Bungee Tint;
+  }
+
+  .button:hover {
+    transform: translateY(-10%); /* Hover durumunda butonu yukarı kaydır */
+  }
+
+  .button:active {
+    transform: translateY(0); /* Butona tıklanırken konumlandırmayı geri al */
+  }
+</style>

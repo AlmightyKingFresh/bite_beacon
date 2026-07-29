@@ -1,0 +1,134 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+
+  path {
+    fill: transparent;
+  }
+  
+  .top-text {
+    fill: #FF9800;
+    font-family: Bungee Tint;
+    text-align:justify;
+    font-size: 45px;
+  }
+
+  .bottom-text {
+    fill: #FF9800;
+    font-family: Bungee Tint;
+    text-align:justify;
+    font-size: 25px;
+  }
+
+  .vendor-link {
+    font-family: Bungee Tint;
+    font-size: 25px;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; 
+}
+
+
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;  
+  }
+ 
+.bg-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .bg {
+    background-image: url("images/front-page.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .vendor-login-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding-top: 5cm;
+    padding-left: 17cm;
+  }
+
+  .button-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding-top: 2cm;
+    padding-right: 71cm;
+  }
+
+  .vendor-link {
+    z-index: 2;
+    position: relative;
+  }
+
+  .button-link {
+    z-index: 2;
+    position: relative;
+  }
+
+
+
+.button-border {
+border: 8px solid #ffae70;
+outline: 4px solid;
+border-radius: 100%;
+}
+
+.button-base {
+background-color: #75221c;
+outline: 2px solid black;
+border-radius: 100%;
+padding-left: 6cm;
+}
+
+.button {
+border-radius: 100%;
+font-size: 32px;
+outline: 2px solid black;
+border: 4px solid;
+border-left-color: #e7b8b4;
+border-top-color: #f8c9c5;
+border-bottom-color: #4e1814;
+border-right-color: #79241e;
+background-color: #bcb6b6;
+cursor: pointer;
+color: #b9afaf;
+padding: 40px 60px;
+transform: translateY(-20%);
+font-family: Bungee Tint;
+}
+
+.button:hover {
+transform: translateY(-10%); 
+}
+
+.button:active {
+transform: translateY(0);
+}
+
+.hero{
+  background-size: cover;
+  background-image: url("/images/front-page.jpg");
+ 
+}

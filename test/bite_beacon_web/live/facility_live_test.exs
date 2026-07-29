@@ -1,0 +1,108 @@
+defmodule BiteBeaconWeb.FacilityLiveTest do
+  use BiteBeaconWeb.ConnCase
+
+  import Phoenix.LiveViewTest
+  import BiteBeacon.Food_FacilitiesFixtures
+
+  @create_attrs %{}
+  @update_attrs %{}
+  @invalid_attrs %{}
+
+  defp create_facility(_) do
+    facility = facility_fixture()
+    %{facility: facility}
+  end
+
+  describe "Index" do
+    setup [:create_facility]
+
+    test "lists all facilities", %{conn: conn} do
+      {:ok, _index_live, html} = live(conn, ~p"/facilities")
+
+      assert html =~ "Listing Facilities"
+    end
+
+    test "saves new facility", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/facilities")
+
+      assert index_live |> element("a", "New Facility") |> render_click() =~
+               "New Facility"
+
+      assert_patch(index_live, ~p"/facilities/new")
+
+      assert index_live
+             |> form("#facility-form", facility: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert index_live
+             |> form("#facility-form", facility: @create_attrs)
+             |> render_submit()
+
+      assert_patch(index_live, ~p"/facilities")
+
+      html = render(index_live)
+      assert html =~ "Facility created successfully"
+    end
+
+    test "updates facility in listing", %{conn: conn, facility: facility} do
+      {:ok, index_live, _html} = live(conn, ~p"/facilities")
+
+      assert index_live |> element("#facilities-#{facility.id} a", "Edit") |> render_click() =~
+               "Edit Facility"
+
+      assert_patch(index_live, ~p"/facilities/#{facility}/edit")
+
+      assert index_live
+             |> form("#facility-form", facility: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert index_live
+             |> form("#facility-form", facility: @update_attrs)
+             |> render_submit()
+
+      assert_patch(index_live, ~p"/facilities")
+
+      html = render(index_live)
+      assert html =~ "Facility updated successfully"
+    end
+
+    test "deletes facility in listing", %{conn: conn, facility: facility} do
+      {:ok, index_live, _html} = live(conn, ~p"/facilities")
+
+      assert index_live |> element("#facilities-#{facility.id} a", "Delete") |> render_click()
+      refute has_element?(index_live, "#facilities-#{facility.id}")
+    end
+  end
+
+  describe "Show" do
+    setup [:create_facility]
+
+    test "displays facility", %{conn: conn, facility: facility} do
+      {:ok, _show_live, html} = live(conn, ~p"/facilities/#{facility}")
+
+      assert html =~ "Show Facility"
+    end
+
+    test "updates facility within modal", %{conn: conn, facility: facility} do
+      {:ok, show_live, _html} = live(conn, ~p"/facilities/#{facility}")
+
+      assert show_live |> element("a", "Edit") |> render_click() =~
+               "Edit Facility"
+
+      assert_patch(show_live, ~p"/facilities/#{facility}/show/edit")
+
+      assert show_live
+             |> form("#facility-form", facility: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      assert show_live
+             |> form("#facility-form", facility: @update_attrs)
+             |> render_submit()
+
+      assert_patch(show_live, ~p"/facilities/#{facility}")
+
+      html = render(show_live)
+      assert html =~ "Facility updated successfully"
+    end
+  end
+end

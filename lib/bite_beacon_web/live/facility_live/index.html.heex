@@ -1,0 +1,45 @@
+<.header>
+  Listing Facilities
+  <:actions>
+    <.link patch={~p"/facilities/new"}>
+      <.button>New Facility</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="facilities"
+  rows={@streams.facilities}
+  row_click={fn {_id, facility} -> JS.navigate(~p"/facilities/#{facility}") end}
+>
+  <:action :let={{_id, facility}}>
+    <div class="sr-only">
+      <.link navigate={~p"/facilities/#{facility}"}>Show</.link>
+    </div>
+    <.link patch={~p"/facilities/#{facility}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, facility}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: facility.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="facility-modal"
+  show
+  on_cancel={JS.patch(~p"/facilities")}
+>
+  <.live_component
+    module={BiteBeaconWeb.FacilityLive.FormComponent}
+    id={@facility.id || :new}
+    title={@page_title}
+    action={@live_action}
+    facility={@facility}
+    patch={~p"/facilities"}
+  />
+</.modal>
