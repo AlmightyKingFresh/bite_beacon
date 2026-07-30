@@ -8,7 +8,7 @@ defmodule Fixtures do
   alias BiteBeacon.Facilities.Facility
   alias BiteBeacon.Repo
   alias NimbleCSV.RFC4180, as: CSV
-  alias Faker.Internet, as: Fake
+  alias Faker.{Internet, Person}
 
   require Timex
   # @facilty_info "test/support/fixtures/Mobile Food Facility Permit.csv"
@@ -72,7 +72,7 @@ defmodule Fixtures do
     formatted_data =
       for map <- mapped_data do
         %{
-          email: Fake.safe_email(),
+          email: Internet.safe_email(),
           # all passwords for fixture data are the same
           password: "Pa$$word",
           permit_id: map["permit_id"],
@@ -106,14 +106,16 @@ defmodule Fixtures do
           supervisor_districts: fix_int(map["supervisor_disticts"]),
           zip_codes: fix_int(map["zip_codes"]),
           neighborhoods: fix_int(map["neighborhoods"]),
-          id: fix_int(map["facility_id"])
+          id: fix_int(map["facility_id"]),
+          first_name: Person.first_name(),
+          last_name: Person.last_name()
         }
       end
 
     {:ok, formatted_data}
   end
 
-  defp dump_vendors(data) do
+  def dump_vendors(data) do
     vendors_params_list =
       data
       |> Enum.uniq_by(fn map -> map.permit_id end)
