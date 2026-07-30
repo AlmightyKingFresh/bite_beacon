@@ -11,7 +11,7 @@ mix ecto.create
 mix ecto.migrate
 
 mix run -e '
-  case BiteBeacon.Food_Facilities.list_facilities() do
+  case BiteBeacon.Facilities.list_facilities() do
     [] ->
       IO.puts("No facilities found, seeding fixture data...")
       {:ok, msg} = Fixtures.data_dump()

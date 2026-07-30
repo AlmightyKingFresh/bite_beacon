@@ -2,7 +2,7 @@ defmodule BiteBeaconWeb.VendorLoginLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.VendorFixtures
 
   describe "Log in page" do
     test "renders log in page", %{conn: conn} do

@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.UserSessionControllerTest do
   use BiteBeaconWeb.ConnCase, async: true
 
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.UserFixtures
 
   setup do
     %{user: user_fixture()}

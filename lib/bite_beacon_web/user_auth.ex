@@ -14,12 +14,9 @@ defmodule BiteBeaconWeb.UserAuth do
   @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
 
   @doc """
-  Logs the user in.
-
-  It renews the session ID and clears the whole session
-  to avoid fixation attacks. See the renew_session
-  function to customize this behaviour.
-
+  *Logs the user in.
+  *renews the session ID and clears the whole session
+  to avoid fixation attacks.
   It also sets a `:live_socket_id` key in the session,
   so LiveView sessions are identified and automatically
   disconnected on log out. The line can be safely removed

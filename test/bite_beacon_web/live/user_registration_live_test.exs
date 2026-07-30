@@ -2,7 +2,7 @@ defmodule BiteBeaconWeb.UserRegistrationLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.UserFixtures
 
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do

@@ -2,9 +2,9 @@ defmodule BiteBeaconWeb.VendorConfirmationInstructionsLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.VendorFixtures
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors
   alias BiteBeacon.Repo
 
   setup do
@@ -29,11 +29,11 @@ defmodule BiteBeaconWeb.VendorConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      assert Repo.get_by!(Accounts.VendorToken, vendor_id: vendor.id).context == "confirm"
+      assert Repo.get_by!(Vendors.VendorToken, vendor_id: vendor.id).context == "confirm"
     end
 
     test "does not send confirmation token if vendor is confirmed", %{conn: conn, vendor: vendor} do
-      Repo.update!(Accounts.Vendor.confirm_changeset(vendor))
+      Repo.update!(Vendors.Vendor.confirm_changeset(vendor))
 
       {:ok, lv, _html} = live(conn, ~p"/vendors/confirm")
 
@@ -46,7 +46,7 @@ defmodule BiteBeaconWeb.VendorConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      refute Repo.get_by(Accounts.VendorToken, vendor_id: vendor.id)
+      refute Repo.get_by(Vendors.VendorToken, vendor_id: vendor.id)
     end
 
     test "does not send confirmation token if email is invalid", %{conn: conn} do
@@ -61,7 +61,7 @@ defmodule BiteBeaconWeb.VendorConfirmationInstructionsLiveTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "If your email is in our system"
 
-      assert Repo.all(Accounts.VendorToken) == []
+      assert Repo.all(Vendors.VendorToken) == []
     end
   end
 end

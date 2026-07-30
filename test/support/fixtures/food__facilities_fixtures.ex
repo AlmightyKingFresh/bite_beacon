@@ -1,7 +1,7 @@
-defmodule BiteBeacon.Food_FacilitiesFixtures do
+defmodule BiteBeacon.FacilityFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `BiteBeacon.Food_Facilities` context.
+  entities via the `BiteBeacon.Facilities` context.
   """
 
   @doc """
@@ -11,7 +11,7 @@ defmodule BiteBeacon.Food_FacilitiesFixtures do
     {:ok, facility} =
       attrs
       |> Enum.into(%{})
-      |> BiteBeacon.Food_Facilities.create_facility()
+      |> BiteBeacon.Facilities.Facilities.create_facility()
 
     facility
   end

@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.FacilityLive.FormComponent do
   use BiteBeaconWeb, :live_component
 
-  alias BiteBeacon.Food_Facilities
+  alias BiteBeacon.Facilities
 
   @impl true
   def render(assigns) do
@@ -33,13 +33,13 @@ defmodule BiteBeaconWeb.FacilityLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
-       to_form(Food_Facilities.change_facility(facility))
+       to_form(Facilities.change_facility(facility))
      end)}
   end
 
   @impl true
   def handle_event("validate", %{"facility" => facility_params}, socket) do
-    changeset = Food_Facilities.change_facility(socket.assigns.facility, facility_params)
+    changeset = Facilities.change_facility(socket.assigns.facility, facility_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -48,7 +48,7 @@ defmodule BiteBeaconWeb.FacilityLive.FormComponent do
   end
 
   defp save_facility(socket, :edit, facility_params) do
-    case Food_Facilities.update_facility(socket.assigns.facility, facility_params) do
+    case Facilities.update_facility(socket.assigns.facility, facility_params) do
       {:ok, facility} ->
         notify_parent({:saved, facility})
 
@@ -63,7 +63,7 @@ defmodule BiteBeaconWeb.FacilityLive.FormComponent do
   end
 
   defp save_facility(socket, :new, facility_params) do
-    case Food_Facilities.create_facility(facility_params) do
+    case Facilities.create_facility(facility_params) do
       {:ok, facility} ->
         notify_parent({:saved, facility})
 

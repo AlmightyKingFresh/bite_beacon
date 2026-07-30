@@ -2,16 +2,16 @@ defmodule BiteBeaconWeb.UserResetPasswordLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.UserFixtures
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Users.Users
 
   setup do
     user = user_fixture()
 
     token =
       extract_user_token(fn url ->
-        Accounts.deliver_user_reset_password_instructions(user, url)
+        Users.deliver_user_reset_password_instructions(user, url)
       end)
 
     %{token: token, user: user}
@@ -65,7 +65,7 @@ defmodule BiteBeaconWeb.UserResetPasswordLiveTest do
 
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
-      assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
+      assert Users.get_user_by_email_and_password(user.email, "new valid password")
     end
 
     test "does not reset password on invalid data", %{conn: conn, token: token} do

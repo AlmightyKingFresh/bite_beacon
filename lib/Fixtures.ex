@@ -5,7 +5,7 @@ defmodule Fixtures do
   import Ecto.Query, warn: false
 
   alias BiteBeacon.Vendors.Vendor
-  alias BiteBeacon.FoodFacilities.Facility
+  alias BiteBeacon.Facilities.Facility
   alias BiteBeacon.Repo
   alias NimbleCSV.RFC4180, as: CSV
   alias Faker.Internet, as: Fake
