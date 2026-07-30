@@ -113,7 +113,7 @@ defmodule Fixtures do
     {:ok, formatted_data}
   end
 
-  def dump_vendors(data) do
+  defp dump_vendors(data) do
     vendors_params_list =
       data
       |> Enum.uniq_by(fn map -> map.permit_id end)

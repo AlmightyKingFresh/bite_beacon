@@ -70,7 +70,7 @@ defmodule BiteBeacon.Vendors.Vendor do
 
   defp validate_permit_status(changeset) do
     changeset
-    |> validate_inclusion(:permit_status, ["APPROVED, EXPIRED, REQUESTED, SUSPEND"])
+    |> validate_inclusion(:permit_status, ["APPROVED", "EXPIRED", "REQUESTED", "SUSPEND", "ISSUED"])
   end
 
   defp validate_name(changeset) do

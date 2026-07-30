@@ -7,7 +7,6 @@ defmodule BiteBeacon.Facilities.Facility do
   schema "facilities" do
     field :type, :string
     field :cnn, :integer
-    field :permit_id, :integer
     field :location_description, :string
     field :address, :string
     field :block_lot, :string
