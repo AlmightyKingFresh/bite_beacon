@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorSettingsLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   def render(assigns) do
     ~H"""
@@ -75,7 +75,7 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
 
   def mount(%{"token" => token}, _session, socket) do
     socket =
-      case Accounts.update_vendor_email(socket.assigns.current_vendor, token) do
+      case Vendors.update_vendor_email(socket.assigns.current_vendor, token) do
         :ok ->
           put_flash(socket, :info, "Email changed successfully.")
 
@@ -88,8 +88,8 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
 
   def mount(_params, _session, socket) do
     vendor = socket.assigns.current_vendor
-    email_changeset = Accounts.change_vendor_email(vendor)
-    password_changeset = Accounts.change_vendor_password(vendor)
+    email_changeset = Vendors.change_vendor_email(vendor)
+    password_changeset = Vendors.change_vendor_password(vendor)
 
     socket =
       socket
@@ -108,7 +108,7 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
 
     email_form =
       socket.assigns.current_vendor
-      |> Accounts.change_vendor_email(vendor_params)
+      |> Vendors.change_vendor_email(vendor_params)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -119,9 +119,9 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
     %{"current_password" => password, "vendor" => vendor_params} = params
     vendor = socket.assigns.current_vendor
 
-    case Accounts.apply_vendor_email(vendor, password, vendor_params) do
+    case Vendors.apply_vendor_email(vendor, password, vendor_params) do
       {:ok, applied_vendor} ->
-        Accounts.deliver_vendor_update_email_instructions(
+        Vendors.deliver_vendor_update_email_instructions(
           applied_vendor,
           vendor.email,
           &url(~p"/vendors/settings/confirm_email/#{&1}")
@@ -140,7 +140,7 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
 
     password_form =
       socket.assigns.current_vendor
-      |> Accounts.change_vendor_password(vendor_params)
+      |> Vendors.change_vendor_password(vendor_params)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -151,11 +151,11 @@ defmodule BiteBeaconWeb.VendorSettingsLive do
     %{"current_password" => password, "vendor" => vendor_params} = params
     vendor = socket.assigns.current_vendor
 
-    case Accounts.update_vendor_password(vendor, password, vendor_params) do
+    case Vendors.update_vendor_password(vendor, password, vendor_params) do
       {:ok, vendor} ->
         password_form =
           vendor
-          |> Accounts.change_vendor_password(vendor_params)
+          |> Vendors.change_vendor_password(vendor_params)
           |> to_form()
 
         {:noreply, assign(socket, trigger_submit: true, password_form: password_form)}

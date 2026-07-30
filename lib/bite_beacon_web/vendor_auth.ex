@@ -4,7 +4,7 @@ defmodule BiteBeaconWeb.VendorAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -26,7 +26,7 @@ defmodule BiteBeaconWeb.VendorAuth do
   if you are not using LiveView.
   """
   def log_in_vendor(conn, vendor, params \\ %{}) do
-    token = Accounts.generate_vendor_session_token(vendor)
+    token = Vendors.generate_vendor_session_token(vendor)
     vendor_return_to = get_session(conn, :vendor_return_to)
 
     conn
@@ -74,7 +74,7 @@ defmodule BiteBeaconWeb.VendorAuth do
   """
   def log_out_vendor(conn) do
     vendor_token = get_session(conn, :vendor_token)
-    vendor_token && Accounts.delete_vendor_session_token(vendor_token)
+    vendor_token && Vendors.delete_vendor_session_token(vendor_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       BiteBeaconWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -92,7 +92,7 @@ defmodule BiteBeaconWeb.VendorAuth do
   """
   def fetch_current_vendor(conn, _opts) do
     {vendor_token, conn} = ensure_vendor_token(conn)
-    vendor = vendor_token && Accounts.get_vendor_by_session_token(vendor_token)
+    vendor = vendor_token && Vendors.get_vendor_by_session_token(vendor_token)
     assign(conn, :current_vendor, vendor)
   end
 
@@ -177,7 +177,7 @@ defmodule BiteBeaconWeb.VendorAuth do
   defp mount_current_vendor(socket, session) do
     Phoenix.Component.assign_new(socket, :current_vendor, fn ->
       if vendor_token = session["vendor_token"] do
-        Accounts.get_vendor_by_session_token(vendor_token)
+        Vendors.get_vendor_by_session_token(vendor_token)
       end
     end)
   end

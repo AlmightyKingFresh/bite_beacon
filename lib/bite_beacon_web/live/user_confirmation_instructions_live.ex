@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.UserConfirmationInstructionsLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Users.Users
 
   def render(assigns) do
     ~H"""
@@ -33,8 +33,8 @@ defmodule BiteBeaconWeb.UserConfirmationInstructionsLive do
   end
 
   def handle_event("send_instructions", %{"user" => %{"email" => email}}, socket) do
-    if user = Accounts.get_user_by_email(email) do
-      Accounts.deliver_user_confirmation_instructions(
+    if user = Users.get_user_by_email(email) do
+      Users.deliver_user_confirmation_instructions(
         user,
         &url(~p"/users/confirm/#{&1}")
       )

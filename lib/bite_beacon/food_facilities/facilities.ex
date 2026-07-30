@@ -1,4 +1,4 @@
-defmodule BiteBeacon.FoodFacilities do
+defmodule BiteBeacon.FoodFacilities.FoodFacility do
   @moduledoc """
   The FoodFacilities context.
   """

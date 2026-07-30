@@ -6,7 +6,7 @@ defmodule BiteBeacon.Users.Users do
   import Ecto.Query, warn: false
   alias BiteBeacon.Repo
 
-  alias BiteBeacon.Users.{User, UserToken, UserNotifier, Vendor}
+  alias BiteBeacon.Users.{User, UserToken, UserNotifier}
 
   ## Database getters
 

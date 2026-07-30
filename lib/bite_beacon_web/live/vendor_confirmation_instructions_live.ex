@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorConfirmationInstructionsLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   def render(assigns) do
     ~H"""
@@ -33,8 +33,8 @@ defmodule BiteBeaconWeb.VendorConfirmationInstructionsLive do
   end
 
   def handle_event("send_instructions", %{"vendor" => %{"email" => email}}, socket) do
-    if vendor = Accounts.get_vendor_by_email(email) do
-      Accounts.deliver_vendor_confirmation_instructions(
+    if vendor = Vendors.get_vendor_by_email(email) do
+      Vendors.deliver_vendor_confirmation_instructions(
         vendor,
         &url(~p"/vendors/confirm/#{&1}")
       )

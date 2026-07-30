@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorForgotPasswordLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   def render(assigns) do
     ~H"""
@@ -32,8 +32,8 @@ defmodule BiteBeaconWeb.VendorForgotPasswordLive do
   end
 
   def handle_event("send_email", %{"vendor" => %{"email" => email}}, socket) do
-    if vendor = Accounts.get_vendor_by_email(email) do
-      Accounts.deliver_vendor_reset_password_instructions(
+    if vendor = Vendors.get_vendor_by_email(email) do
+      Vendors.deliver_vendor_reset_password_instructions(
         vendor,
         &url(~p"/vendors/reset_password/#{&1}")
       )
