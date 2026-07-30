@@ -18,7 +18,8 @@ defmodule BiteBeacon.Vendors.Vendor do
     field :prior_permit, :integer
     field :permit_expiration_date, :utc_datetime
     field :date_notice_of_intent_sent, :utc_datetime
-    field :name, :string
+    field :first_name, :string
+    field :last_name, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -51,7 +52,8 @@ defmodule BiteBeacon.Vendors.Vendor do
     |> cast(attrs, [
       :email,
       :password,
-      :name,
+      :first_name,
+      :last_name,
       :permit_id,
       :permit_status,
       :permit_approval_date,
@@ -60,28 +62,40 @@ defmodule BiteBeacon.Vendors.Vendor do
       :permit_expiration_date,
       :date_notice_of_intent_sent
     ])
-    |> validate_required([:permit_id, :permit_status, :email, :name, :password])
+    |> validate_required([:permit_id, :permit_status, :email, :first_name, :last_name, :password])
     |> validate_email(opts)
     |> validate_password(opts)
-    |> validate_name()
+    |> validate_first_name()
+    |> validate_last_name()
     |> validate_permit_status()
     |> unique_constraint([:permit_id])
   end
 
   defp validate_permit_status(changeset) do
     changeset
-    |> validate_inclusion(:permit_status, ["APPROVED", "EXPIRED", "REQUESTED", "SUSPEND", "ISSUED"])
+    |> validate_inclusion(:permit_status, [
+      "APPROVED",
+      "EXPIRED",
+      "REQUESTED",
+      "SUSPEND",
+      "ISSUED"
+    ])
   end
 
-  defp validate_name(changeset) do
+  defp validate_first_name(changeset) do
     changeset
-    |> validate_length(:name, min: 2, max: 100)
+    |> validate_length(:first_name, min: 2, max: 30)
+  end
+
+  defp validate_last_name(changeset) do
+    changeset
+    |> validate_length(:last_name, min: 2, max: 30)
   end
 
   defp validate_email(changeset, opts) do
     changeset
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
-    |> validate_length(:email, max: 160)
+    |> validate_length(:email, max: 50)
     |> maybe_validate_unique_email(opts)
   end
 
