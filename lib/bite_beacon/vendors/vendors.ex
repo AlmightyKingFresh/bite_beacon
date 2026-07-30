@@ -3,8 +3,6 @@ defmodule BiteBeacon.Vendors.Vendors do
   alias BiteBeacon.Repo
   alias BiteBeacon.Vendors.{Vendor, VendorToken, VendorNotifier}
 
-  ## Database getters
-
   @doc """
   Gets a vendor by email.
 
@@ -37,6 +35,10 @@ defmodule BiteBeacon.Vendors.Vendors do
       when is_binary(email) and is_binary(password) do
     vendor = Repo.get_by(Vendor, email: email)
     if Vendor.valid_password?(vendor, password), do: vendor
+  end
+
+  def list_vendors do
+    Repo.all(Vendor)
   end
 
   @doc """

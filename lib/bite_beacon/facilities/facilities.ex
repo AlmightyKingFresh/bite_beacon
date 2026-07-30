@@ -38,17 +38,20 @@ defmodule BiteBeacon.Facilities.Facilities do
   def get_facility!(id), do: Repo.get!(Facility, id)
 
   @doc """
-  Creates a facility.
-
-  ## Examples
-
-      iex> create_facility(%{field: value})
-      {:ok, %Facility{}}
-
-      iex> create_facility(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+  gets all facilities by vendor_id
 
   """
+  def list_facilities_by_vendor_id(vendor_id) when is_binary(vendor_id) do
+    Repo.all(from f in Facility, where: f.vendor_id == ^vendor_id)
+  end
+
+  @doc """
+  gets facilities by name
+  """
+  def list_facilities_by_name(name) when is_binary(name) do
+    Repo.all(from f in Facility, where: f.name == ^name)
+  end
+
   def create_facility(attrs \\ %{}) do
     %Facility{}
     |> Facility.changeset(attrs)
