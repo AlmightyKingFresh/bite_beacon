@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorConfirmationLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   def render(%{live_action: :edit} = assigns) do
     ~H"""
@@ -31,7 +31,7 @@ defmodule BiteBeaconWeb.VendorConfirmationLive do
   # Do not log in the vendor after confirmation to avoid a
   # leaked token giving the vendor access to the account.
   def handle_event("confirm_account", %{"vendor" => %{"token" => token}}, socket) do
-    case Accounts.confirm_vendor(token) do
+    case Vendors.confirm_vendor(token) do
       {:ok, _} ->
         {:noreply,
          socket

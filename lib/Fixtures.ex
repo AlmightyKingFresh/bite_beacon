@@ -4,8 +4,8 @@ defmodule Fixtures do
   """
   import Ecto.Query, warn: false
 
-  alias BiteBeacon.Accounts.Vendor
-  alias BiteBeacon.FoodFacilities.Facility
+  alias BiteBeacon.Vendors.Vendor
+  alias BiteBeacon.Facilities.Facility
   alias BiteBeacon.Repo
   alias NimbleCSV.RFC4180, as: CSV
   alias Faker.Internet, as: Fake
@@ -113,7 +113,7 @@ defmodule Fixtures do
     {:ok, formatted_data}
   end
 
-  def dump_vendors(data) do
+  defp dump_vendors(data) do
     vendors_params_list =
       data
       |> Enum.uniq_by(fn map -> map.permit_id end)
@@ -203,17 +203,19 @@ defmodule Fixtures do
     end
   end
 
-  defp to_utc(date_string) do
-    date_format = "{D}/{M}/{YYYY}"
+  # im squeemish about deleting this function, for some reason it feels like it
+  # might be useful in the future, so im leaving it here for now
+  # defp to_utc(date_string) do
+  #   date_format = "{D}/{M}/{YYYY}"
 
-    case Timex.parse(date_string, date_format) do
-      {:ok, date} ->
-        Timex.to_datetime(date, "Etc/UTC")
+  #   case Timex.parse(date_string, date_format) do
+  #     {:ok, date} ->
+  #       Timex.to_datetime(date, "Etc/UTC")
 
-      {:error, reason} ->
-        reason
-    end
-  end
+  #     {:error, reason} ->
+  #       reason
+  #   end
+  # end
 
   defp fix_int(x) when is_nil(x) or x == "", do: nil
 

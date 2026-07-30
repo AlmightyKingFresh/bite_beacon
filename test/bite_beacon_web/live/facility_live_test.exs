@@ -2,7 +2,7 @@ defmodule BiteBeaconWeb.FacilityLiveTest do
   use BiteBeaconWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.Food_FacilitiesFixtures
+  import BiteBeacon.FacilityFixtures
 
   @create_attrs %{}
   @update_attrs %{}

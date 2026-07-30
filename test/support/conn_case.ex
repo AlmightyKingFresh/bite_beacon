@@ -17,6 +17,8 @@ defmodule BiteBeaconWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias BiteBeacon.Users.Users
+
   using do
     quote do
       # The default endpoint for testing
@@ -45,7 +47,7 @@ defmodule BiteBeaconWeb.ConnCase do
   test context.
   """
   def register_and_log_in_user(%{conn: conn}) do
-    user = BiteBeacon.AccountsFixtures.user_fixture()
+    user = BiteBeacon.UsersFixtures.user_fixture()
     %{conn: log_in_user(conn, user), user: user}
   end
 
@@ -55,7 +57,7 @@ defmodule BiteBeaconWeb.ConnCase do
   It returns an updated `conn`.
   """
   def log_in_user(conn, user) do
-    token = BiteBeacon.Accounts.generate_user_session_token(user)
+    token = BiteBeacon.Users.Users.generate_user_session_token(user)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})
@@ -71,7 +73,7 @@ defmodule BiteBeaconWeb.ConnCase do
   test context.
   """
   def register_and_log_in_vendor(%{conn: conn}) do
-    vendor = BiteBeacon.AccountsFixtures.vendor_fixture()
+    vendor = BiteBeacon.Vendor.Fixtures.vendor_fixture()
     %{conn: log_in_vendor(conn, vendor), vendor: vendor}
   end
 
@@ -81,7 +83,7 @@ defmodule BiteBeaconWeb.ConnCase do
   It returns an updated `conn`.
   """
   def log_in_vendor(conn, vendor) do
-    token = BiteBeacon.Accounts.generate_vendor_session_token(vendor)
+    token = BiteBeacon.Vendors.Vendors.generate_vendor_session_token(vendor)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})

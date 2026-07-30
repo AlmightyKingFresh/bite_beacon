@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorSessionControllerTest do
   use BiteBeaconWeb.ConnCase, async: true
 
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.VendorFixtures
 
   setup do
     %{vendor: vendor_fixture()}

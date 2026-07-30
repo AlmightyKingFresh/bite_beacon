@@ -1,4 +1,4 @@
-defmodule BiteBeacon.Accounts.VendorNotifier do
+defmodule BiteBeacon.Users.UserNotifier do
   import Swoosh.Email
 
   alias BiteBeacon.Mailer
@@ -20,12 +20,12 @@ defmodule BiteBeacon.Accounts.VendorNotifier do
   @doc """
   Deliver instructions to confirm account.
   """
-  def deliver_confirmation_instructions(vendor, url) do
-    deliver(vendor.email, "Confirmation instructions", """
+  def deliver_confirmation_instructions(user, url) do
+    deliver(user.email, "Confirmation instructions", """
 
     ==============================
 
-    Hi #{vendor.email},
+    Hi #{user.email},
 
     You can confirm your account by visiting the URL below:
 
@@ -38,14 +38,14 @@ defmodule BiteBeacon.Accounts.VendorNotifier do
   end
 
   @doc """
-  Deliver instructions to reset a vendor password.
+  Deliver instructions to reset a user password.
   """
-  def deliver_reset_password_instructions(vendor, url) do
-    deliver(vendor.email, "Reset password instructions", """
+  def deliver_reset_password_instructions(user, url) do
+    deliver(user.email, "Reset password instructions", """
 
     ==============================
 
-    Hi #{vendor.email},
+    Hi #{user.email},
 
     You can reset your password by visiting the URL below:
 
@@ -58,14 +58,14 @@ defmodule BiteBeacon.Accounts.VendorNotifier do
   end
 
   @doc """
-  Deliver instructions to update a vendor email.
+  Deliver instructions to update a user email.
   """
-  def deliver_update_email_instructions(vendor, url) do
-    deliver(vendor.email, "Update email instructions", """
+  def deliver_update_email_instructions(user, url) do
+    deliver(user.email, "Update email instructions", """
 
     ==============================
 
-    Hi #{vendor.email},
+    Hi #{user.email},
 
     You can change your email by visiting the URL below:
 

@@ -1,6 +1,8 @@
-defmodule BiteBeacon.Accounts.User do
+defmodule BiteBeacon.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias BiteBeacon.Users.User
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -149,7 +151,7 @@ defmodule BiteBeacon.Accounts.User do
   If there is no user or the user doesn't have a password, we call
   `Bcrypt.no_user_verify/0` to avoid timing attacks.
   """
-  def valid_password?(%BiteBeacon.Accounts.User{hashed_password: hashed_password}, password)
+  def valid_password?(%User{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Bcrypt.verify_pass(password, hashed_password)
   end

@@ -2,9 +2,9 @@ defmodule BiteBeaconWeb.VendorAuthTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   alias Phoenix.LiveView
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
   alias BiteBeaconWeb.VendorAuth
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.VendorFixtures
 
   @remember_me_cookie "_bite_beacon_web_vendor_remember_me"
 
@@ -23,7 +23,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
       assert token = get_session(conn, :vendor_token)
       assert get_session(conn, :live_socket_id) == "vendors_sessions:#{Base.url_encode64(token)}"
       assert redirected_to(conn) == ~p"/"
-      assert Accounts.get_vendor_by_session_token(token)
+      assert Vendors.get_vendor_by_session_token(token)
     end
 
     test "clears everything previously stored in the session", %{conn: conn, vendor: vendor} do
@@ -50,7 +50,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
 
   describe "logout_vendor/1" do
     test "erases session and cookies", %{conn: conn, vendor: vendor} do
-      vendor_token = Accounts.generate_vendor_session_token(vendor)
+      vendor_token = Vendors.generate_vendor_session_token(vendor)
 
       conn =
         conn
@@ -63,7 +63,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
       refute conn.cookies[@remember_me_cookie]
       assert %{max_age: 0} = conn.resp_cookies[@remember_me_cookie]
       assert redirected_to(conn) == ~p"/"
-      refute Accounts.get_vendor_by_session_token(vendor_token)
+      refute Vendors.get_vendor_by_session_token(vendor_token)
     end
 
     test "broadcasts to the given live_socket_id", %{conn: conn} do
@@ -87,7 +87,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
 
   describe "fetch_current_vendor/2" do
     test "authenticates vendor from session", %{conn: conn, vendor: vendor} do
-      vendor_token = Accounts.generate_vendor_session_token(vendor)
+      vendor_token = Vendors.generate_vendor_session_token(vendor)
 
       conn =
         conn |> put_session(:vendor_token, vendor_token) |> VendorAuth.fetch_current_vendor([])
@@ -115,7 +115,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
     end
 
     test "does not authenticate if data is missing", %{conn: conn, vendor: vendor} do
-      _ = Accounts.generate_vendor_session_token(vendor)
+      _ = Vendors.generate_vendor_session_token(vendor)
       conn = VendorAuth.fetch_current_vendor(conn, [])
       refute get_session(conn, :vendor_token)
       refute conn.assigns.current_vendor
@@ -124,7 +124,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
 
   describe "on_mount :mount_current_vendor" do
     test "assigns current_vendor based on a valid vendor_token", %{conn: conn, vendor: vendor} do
-      vendor_token = Accounts.generate_vendor_session_token(vendor)
+      vendor_token = Vendors.generate_vendor_session_token(vendor)
       session = conn |> put_session(:vendor_token, vendor_token) |> get_session()
 
       {:cont, updated_socket} =
@@ -158,7 +158,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
       conn: conn,
       vendor: vendor
     } do
-      vendor_token = Accounts.generate_vendor_session_token(vendor)
+      vendor_token = Vendors.generate_vendor_session_token(vendor)
       session = conn |> put_session(:vendor_token, vendor_token) |> get_session()
 
       {:cont, updated_socket} =
@@ -195,7 +195,7 @@ defmodule BiteBeaconWeb.VendorAuthTest do
 
   describe "on_mount :redirect_if_vendor_is_authenticated" do
     test "redirects if there is an authenticated  vendor ", %{conn: conn, vendor: vendor} do
-      vendor_token = Accounts.generate_vendor_session_token(vendor)
+      vendor_token = Vendors.generate_vendor_session_token(vendor)
       session = conn |> put_session(:vendor_token, vendor_token) |> get_session()
 
       assert {:halt, _updated_socket} =

@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.UserSessionController do
   use BiteBeaconWeb, :controller
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Users.Users
   alias BiteBeaconWeb.UserAuth
 
   def create(conn, %{"_action" => "registered"} = params) do
@@ -21,7 +21,7 @@ defmodule BiteBeaconWeb.UserSessionController do
   defp create(conn, %{"user" => user_params}, info) do
     %{"email" => email, "password" => password} = user_params
 
-    if user = Accounts.get_user_by_email_and_password(email, password) do
+    if user = Users.get_user_by_email_and_password(email, password) do
       conn
       |> put_flash(:info, info)
       |> UserAuth.log_in_user(user, user_params)

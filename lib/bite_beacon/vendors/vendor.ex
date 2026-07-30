@@ -1,4 +1,4 @@
-defmodule BiteBeacon.Accounts.Vendor do
+defmodule BiteBeacon.Vendors.Vendor do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -70,7 +70,7 @@ defmodule BiteBeacon.Accounts.Vendor do
 
   defp validate_permit_status(changeset) do
     changeset
-    |> validate_inclusion(:permit_status, ["APPROVED, EXPIRED, REQUESTED, SUSPEND"])
+    |> validate_inclusion(:permit_status, ["APPROVED", "EXPIRED", "REQUESTED", "SUSPEND", "ISSUED"])
   end
 
   defp validate_name(changeset) do
@@ -171,7 +171,7 @@ defmodule BiteBeacon.Accounts.Vendor do
   If there is no vendor or the vendor doesn't have a password, we call
   `Bcrypt.no_user_verify/0` to avoid timing attacks.
   """
-  def valid_password?(%BiteBeacon.Accounts.Vendor{hashed_password: hashed_password}, password)
+  def valid_password?(%BiteBeacon.Vendors.Vendor{hashed_password: hashed_password}, password)
       when is_binary(hashed_password) and byte_size(password) > 0 do
     Bcrypt.verify_pass(password, hashed_password)
   end

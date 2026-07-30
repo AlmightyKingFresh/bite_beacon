@@ -1,7 +1,7 @@
-defmodule BiteBeacon.Accounts.VendorToken do
+defmodule BiteBeacon.Vendors.VendorToken do
   use Ecto.Schema
   import Ecto.Query
-  alias BiteBeacon.Accounts.VendorToken
+  alias BiteBeacon.Vendors.VendorToken
 
   @hash_algorithm :sha256
   @rand_size 32
@@ -17,7 +17,7 @@ defmodule BiteBeacon.Accounts.VendorToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    belongs_to :vendor, BiteBeacon.Accounts.Vendor
+    belongs_to :vendor, BiteBeacon.Vendors.Vendor
 
     timestamps(type: :utc_datetime, updated_at: false)
   end

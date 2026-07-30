@@ -1,11 +1,10 @@
 defmodule BiteBeaconWeb.VendorRegistrationLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
-  alias BiteBeacon.Accounts.Vendor
+  alias BiteBeacon.Vendors.Vendor
 
   def mount(_params, _session, socket) do
-    changeset = Accounts.change_vendor_registration(%Vendor{})
+    changeset = Vendors.change_vendor_registration(%Vendor{})
     IO.inspect(socket.view)
 
     socket =
@@ -17,15 +16,15 @@ defmodule BiteBeaconWeb.VendorRegistrationLive do
   end
 
   def handle_event("save", %{"vendor" => vendor_params}, socket) do
-    case Accounts.register_vendor(vendor_params) do
+    case Vendors.register_vendor(vendor_params) do
       {:ok, vendor} ->
         {:ok, _} =
-          Accounts.deliver_vendor_confirmation_instructions(
+          Vendors.deliver_vendor_confirmation_instructions(
             vendor,
             &url(~p"/vendors/confirm/#{&1}")
           )
 
-        changeset = Accounts.change_vendor_registration(vendor)
+        changeset = Vendors.change_vendor_registration(vendor)
         {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -34,7 +33,7 @@ defmodule BiteBeaconWeb.VendorRegistrationLive do
   end
 
   def handle_event("validate", %{"vendor" => vendor_params}, socket) do
-    changeset = Accounts.change_vendor_registration(%Vendor{}, vendor_params)
+    changeset = Vendors.change_vendor_registration(%Vendor{}, vendor_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 

@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorSessionController do
   use BiteBeaconWeb, :controller
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
   alias BiteBeaconWeb.VendorAuth
 
   def create(conn, %{"_action" => "registered"} = params) do
@@ -21,7 +21,7 @@ defmodule BiteBeaconWeb.VendorSessionController do
   defp create(conn, %{"vendor" => vendor_params}, info) do
     %{"email" => email, "password" => password} = vendor_params
 
-    if vendor = Accounts.get_vendor_by_email_and_password(email, password) do
+    if vendor = Vendors.get_vendor_by_email_and_password(email, password) do
       conn
       |> put_flash(:info, info)
       |> VendorAuth.log_in_vendor(vendor, vendor_params)

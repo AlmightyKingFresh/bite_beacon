@@ -2,16 +2,16 @@ defmodule BiteBeaconWeb.VendorResetPasswordLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.VendorFixtures
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   setup do
     vendor = vendor_fixture()
 
     token =
       extract_vendor_token(fn url ->
-        Accounts.deliver_vendor_reset_password_instructions(vendor, url)
+        Vendors.deliver_vendor_reset_password_instructions(vendor, url)
       end)
 
     %{token: token, vendor: vendor}
@@ -65,7 +65,7 @@ defmodule BiteBeaconWeb.VendorResetPasswordLiveTest do
 
       refute get_session(conn, :vendor_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
-      assert Accounts.get_vendor_by_email_and_password(vendor.email, "new valid password")
+      assert Vendors.get_vendor_by_email_and_password(vendor.email, "new valid password")
     end
 
     test "does not reset password on invalid data", %{conn: conn, token: token} do

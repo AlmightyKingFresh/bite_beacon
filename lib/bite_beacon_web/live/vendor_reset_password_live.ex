@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorResetPasswordLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
 
   def render(assigns) do
     ~H"""
@@ -44,7 +44,7 @@ defmodule BiteBeaconWeb.VendorResetPasswordLive do
     form_source =
       case socket.assigns do
         %{vendor: vendor} ->
-          Accounts.change_vendor_password(vendor)
+          Vendors.change_vendor_password(vendor)
 
         _ ->
           %{}
@@ -56,7 +56,7 @@ defmodule BiteBeaconWeb.VendorResetPasswordLive do
   # Do not log in the vendor after reset password to avoid a
   # leaked token giving the vendor access to the account.
   def handle_event("reset_password", %{"vendor" => vendor_params}, socket) do
-    case Accounts.reset_vendor_password(socket.assigns.vendor, vendor_params) do
+    case Vendors.reset_vendor_password(socket.assigns.vendor, vendor_params) do
       {:ok, _} ->
         {:noreply,
          socket
@@ -69,12 +69,12 @@ defmodule BiteBeaconWeb.VendorResetPasswordLive do
   end
 
   def handle_event("validate", %{"vendor" => vendor_params}, socket) do
-    changeset = Accounts.change_vendor_password(socket.assigns.vendor, vendor_params)
+    changeset = Vendors.change_vendor_password(socket.assigns.vendor, vendor_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
   end
 
   defp assign_vendor_and_token(socket, %{"token" => token}) do
-    if vendor = Accounts.get_vendor_by_reset_password_token(token) do
+    if vendor = Vendors.get_vendor_by_reset_password_token(token) do
       assign(socket, vendor: vendor, token: token)
     else
       socket

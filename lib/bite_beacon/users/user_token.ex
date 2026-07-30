@@ -1,7 +1,7 @@
-defmodule BiteBeacon.Accounts.UserToken do
+defmodule BiteBeacon.Users.UserToken do
   use Ecto.Schema
   import Ecto.Query
-  alias BiteBeacon.Accounts.UserToken
+  alias BiteBeacon.Users.UserToken
 
   @hash_algorithm :sha256
   @rand_size 32
@@ -17,7 +17,7 @@ defmodule BiteBeacon.Accounts.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
-    belongs_to :user, BiteBeacon.Accounts.User, type: :binary_id
+    belongs_to :user, BiteBeacon.Users.User, type: :binary_id
 
     timestamps(type: :utc_datetime, updated_at: false)
   end

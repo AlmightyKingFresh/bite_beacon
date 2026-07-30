@@ -2,9 +2,9 @@ defmodule BiteBeaconWeb.UserForgotPasswordLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
+  import BiteBeacon.UserFixtures
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Users.Users
   alias BiteBeacon.Repo
 
   describe "Forgot password page" do
@@ -43,7 +43,7 @@ defmodule BiteBeaconWeb.UserForgotPasswordLiveTest do
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
 
-      assert Repo.get_by!(Accounts.UserToken, user_id: user.id).context ==
+      assert Repo.get_by!(Users.UserToken, user_id: user.id).context ==
                "reset_password"
     end
 
@@ -57,7 +57,7 @@ defmodule BiteBeaconWeb.UserForgotPasswordLiveTest do
         |> follow_redirect(conn, "/")
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "If your email is in our system"
-      assert Repo.all(Accounts.UserToken) == []
+      assert Repo.all(Users.UserToken) == []
     end
   end
 end

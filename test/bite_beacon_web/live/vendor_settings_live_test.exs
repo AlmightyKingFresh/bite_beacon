@@ -1,9 +1,9 @@
 defmodule BiteBeaconWeb.VendorSettingsLiveTest do
   use BiteBeaconWeb.ConnCase, async: true
 
-  alias BiteBeacon.Accounts
+  alias BiteBeacon.Vendors.Vendors
+  import BiteBeacon.VendorFixtures
   import Phoenix.LiveViewTest
-  import BiteBeacon.AccountsFixtures
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do
@@ -46,7 +46,7 @@ defmodule BiteBeaconWeb.VendorSettingsLiveTest do
         |> render_submit()
 
       assert result =~ "A link to confirm your email"
-      assert Accounts.get_vendor_by_email(vendor.email)
+      assert Vendors.get_vendor_by_email(vendor.email)
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
@@ -115,7 +115,7 @@ defmodule BiteBeaconWeb.VendorSettingsLiveTest do
       assert Phoenix.Flash.get(new_password_conn.assigns.flash, :info) =~
                "Password updated successfully"
 
-      assert Accounts.get_vendor_by_email_and_password(vendor.email, new_password)
+      assert Vendors.get_vendor_by_email_and_password(vendor.email, new_password)
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
@@ -165,7 +165,7 @@ defmodule BiteBeaconWeb.VendorSettingsLiveTest do
 
       token =
         extract_vendor_token(fn url ->
-          Accounts.deliver_vendor_update_email_instructions(
+          Vendors.deliver_vendor_update_email_instructions(
             %{vendor | email: email},
             vendor.email,
             url
@@ -187,8 +187,8 @@ defmodule BiteBeaconWeb.VendorSettingsLiveTest do
       assert path == ~p"/vendors/settings"
       assert %{"info" => message} = flash
       assert message == "Email changed successfully."
-      refute Accounts.get_vendor_by_email(vendor.email)
-      assert Accounts.get_vendor_by_email(email)
+      refute Vendors.get_vendor_by_email(vendor.email)
+      assert Vendors.get_vendor_by_email(email)
 
       # use confirm token again
       {:error, redirect} = live(conn, ~p"/vendors/settings/confirm_email/#{token}")
@@ -204,7 +204,7 @@ defmodule BiteBeaconWeb.VendorSettingsLiveTest do
       assert path == ~p"/vendors/settings"
       assert %{"error" => message} = flash
       assert message == "Email change link is invalid or it has expired."
-      assert Accounts.get_vendor_by_email(vendor.email)
+      assert Vendors.get_vendor_by_email(vendor.email)
     end
 
     test "redirects if vendor is not logged in", %{token: token} do

@@ -1,4 +1,4 @@
-defmodule BiteBeacon.FoodFacilities.Facility do
+defmodule BiteBeacon.Facilities.Facility do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -7,7 +7,6 @@ defmodule BiteBeacon.FoodFacilities.Facility do
   schema "facilities" do
     field :type, :string
     field :cnn, :integer
-    field :permit_id, :integer
     field :location_description, :string
     field :address, :string
     field :block_lot, :string
@@ -27,7 +26,7 @@ defmodule BiteBeacon.FoodFacilities.Facility do
     field :zip_codes, :integer
     field :neighborhoods, :integer
 
-    belongs_to :vendor, BiteBeacon.Accounts.Vendor, type: :binary_id
+    belongs_to :vendor, BiteBeacon.Vendors.Vendor, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
