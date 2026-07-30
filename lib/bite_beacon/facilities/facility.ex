@@ -25,6 +25,7 @@ defmodule BiteBeacon.Facilities.Facility do
     field :supervisor_districts, :integer
     field :zip_codes, :integer
     field :neighborhoods, :integer
+    field :name, :string
 
     belongs_to :vendor, BiteBeacon.Vendors.Vendor, type: :binary_id
 
@@ -55,9 +56,17 @@ defmodule BiteBeacon.Facilities.Facility do
       :supervisor_districts,
       :zip_codes,
       :neighborhoods,
-      :vendor_id
+      :vendor_id,
+      :name
     ])
     |> validate_length(:cuisine, max: 500)
-    |> validate_required([:vendor_id])
+    |> validate_required([:vendor_id, :id, :name])
+    |> foreign_key_constraint(:vendor_id)
+    |> validate_type()
+  end
+
+  defp validate_type(changeset) do
+    changeset
+    |> validate_inclusion(:type, ["Truck", "Push Cart"])
   end
 end
