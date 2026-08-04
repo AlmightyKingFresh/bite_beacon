@@ -6,18 +6,17 @@ defmodule BiteBeacon.Reviews.Review do
     field :rating, :integer
     field :body, :string
     belongs_to :facility, BiteBeacon.Facilities.Facility
-    belongs_to :user, BiteBeacon.Users.User
-
+    belongs_to :user, BiteBeacon.Users.User, type: :binary_id
     timestamps(type: :utc_datetime)
   end
 
   def review_changeset(review, attrs) do
     review
-    |> cast(attrs, [:facility_id, :user_id, :rating])
+    |> cast(attrs, [:facility_id, :user_id, :rating, :body])
     |> validate_required([:facility_id, :user_id, :rating])
-    |> validate_length
-    |> validate_rating
-    |> unique_constraint(:facility_id_user_id)
+    |> validate_body_length()
+    |> validate_rating()
+    |> unique_constraint(:facility_id, :_user_id)
   end
 
   defp validate_body_length(changeset) do
