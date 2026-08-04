@@ -54,7 +54,7 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   def create_facility(attrs \\ %{}) do
     %Facility{}
-    |> Facility.changeset(attrs)
+    |> Facility.registration_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -72,7 +72,7 @@ defmodule BiteBeacon.Facilities.Facilities do
   """
   def update_facility(%Facility{} = facility, attrs) do
     facility
-    |> Facility.changeset(attrs)
+    |> Facility.registration_changeset(attrs)
     |> Repo.update()
   end
 
@@ -102,6 +102,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   """
   def change_facility(%Facility{} = facility, attrs \\ %{}) do
-    Facility.changeset(facility, attrs)
+    Facility.registration_changeset(facility, attrs)
   end
 end
