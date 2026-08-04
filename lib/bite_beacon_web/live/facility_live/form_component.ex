@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.FacilityLive.FormComponent do
   use BiteBeaconWeb, :live_component
 
-  alias BiteBeacon.Facilities
+  alias BiteBeacon.Facilities.Facilities
 
   @impl true
   def render(assigns) do

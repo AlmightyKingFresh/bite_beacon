@@ -1,7 +1,7 @@
 defmodule BiteBeaconWeb.VendorRegistrationLive do
   use BiteBeaconWeb, :live_view
 
-  alias BiteBeacon.Vendors.Vendor
+  alias BiteBeacon.Vendors.{Vendor, Vendors}
 
   def mount(_params, _session, socket) do
     changeset = Vendors.change_vendor_registration(%Vendor{})
