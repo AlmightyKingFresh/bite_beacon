@@ -10,13 +10,15 @@ defmodule BiteBeacon.Reviews.Review do
     timestamps(type: :utc_datetime)
   end
 
-  def review_changeset(review, attrs) do
+  def review_changeset(review, attrs \\ %{}) do
     review
     |> cast(attrs, [:facility_id, :user_id, :rating, :body])
     |> validate_required([:facility_id, :user_id, :rating])
     |> validate_body_length()
     |> validate_rating()
-    |> unique_constraint(:facility_id, :_user_id)
+    |> unique_constraint([:facility_id, :user_id])
+    |> foreign_key_constraint(:facility_id)
+    |> foreign_key_constraint(:user_id)
   end
 
   defp validate_body_length(changeset) do
