@@ -144,4 +144,19 @@ defmodule BiteBeacon.UsersTest do
              } = errors_on(changeset)
     end
   end
+
+  describe "user updates" do
+    setup do
+      user = insert(:user)
+      %{user: user}
+    end
+
+    test "valid update changeset works", %{user: user} do
+      changeset =
+        User.name_changeset(user, %{
+          name: "NewName",
+          email: ""
+        })
+    end
+  end
 end
