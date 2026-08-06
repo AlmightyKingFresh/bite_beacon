@@ -52,21 +52,21 @@ defmodule BiteBeacon.Users.User do
   defp validate_name(changeset) do
     changeset
     |> validate_required([:name])
-    |> validate_length(:name, min: 4, max: 15)
+    |> validate_length(:name, min: 4, max: 30, message: "must be between 4 and 30 characters")
   end
 
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
-    |> validate_length(:email, max: 160)
+    |> validate_length(:email, max: 35, message: "must be at most 35 characters")
     |> maybe_validate_unique_email(opts)
   end
 
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
-    |> validate_length(:password, min: 6, max: 72)
+    |> validate_length(:password, min: 6, max: 35, message: "must be between 6 and 35 characters")
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,

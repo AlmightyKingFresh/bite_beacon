@@ -16,7 +16,7 @@ defmodule BiteBeacon.Factory do
     %User{
       email: Internet.email(),
       password: "Pa$$word",
-      name: Internet.user_name(),
+      name: "DenzelistheGoat836",
       confirmed_at: DateTime.utc_now()
     }
   end
