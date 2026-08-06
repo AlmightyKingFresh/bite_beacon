@@ -13,7 +13,7 @@ defmodule BiteBeacon.Users.User do
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
-    field :user_name, :string
+    field :name, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -43,16 +43,16 @@ defmodule BiteBeacon.Users.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :user_name])
+    |> cast(attrs, [:email, :password, :name])
     |> validate_email(opts)
-    |> validate_user_name()
+    |> validate_name()
     |> validate_password(opts)
   end
 
-  defp validate_user_name(changeset) do
+  defp validate_name(changeset) do
     changeset
-    |> validate_required([:user_name])
-    |> validate_length(:user_name, min: 4, max: 15)
+    |> validate_required([:name])
+    |> validate_length(:name, min: 4, max: 15)
   end
 
   defp validate_email(changeset, opts) do
@@ -70,7 +70,8 @@ defmodule BiteBeacon.Users.User do
     |> validate_format(:password, ~r/[a-z]/, message: "at least one lower case character")
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
-      message: " must have a capital letter, a lowercase letter, and adigit or punctuation character"
+      message:
+        " must have a capital letter, a lowercase letter, and adigit or punctuation character"
     )
     |> maybe_hash_password(opts)
   end
