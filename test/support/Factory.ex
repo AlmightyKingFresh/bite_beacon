@@ -17,7 +17,8 @@ defmodule BiteBeacon.Factory do
       email: Internet.email(),
       password: "Pa$$word",
       name: "DenzelistheGoat836",
-      confirmed_at: DateTime.utc_now()
+      confirmed_at: DateTime.utc_now(),
+      hashed_password: Bcrypt.hash_pwd_salt("Pa$$word")
     }
   end
 

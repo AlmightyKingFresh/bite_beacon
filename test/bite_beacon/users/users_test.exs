@@ -1,4 +1,7 @@
 defmodule BiteBeacon.UsersTest do
+  @moduledoc """
+  Test suite for BiteBeacon.Users context.
+  """
   use BiteBeacon.DataCase, async: true
 
   import BiteBeacon.Factory
@@ -143,20 +146,98 @@ defmodule BiteBeacon.UsersTest do
                ]
              } = errors_on(changeset)
     end
+
+    test "hashes the password" do
+      changeset =
+        User.registration_changeset(%User{}, %{
+          email: "test@example.com",
+          name: "testuser",
+          password: "Pa$$word123!"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :hashed_password)
+      # cleared after hashing
+      refute get_change(changeset, :password)
+    end
   end
 
-  describe "user updates" do
+  describe "user update changesets" do
     setup do
       user = insert(:user)
       %{user: user}
     end
 
-    test "valid update changeset works", %{user: user} do
+    test "valid name update changeset works", %{user: user} do
       changeset =
         User.name_changeset(user, %{
           name: "NewName",
-          email: ""
+          email: user.email
         })
+
+      assert changeset.valid?
+      assert get_change(changeset, :name) == "NewName"
+    end
+
+    test "invalid name update changeset fails", %{user: user} do
+      changeset =
+        User.name_changeset(user, %{
+          name: "a",
+          email: user.email
+        })
+
+      refute changeset.valid?
+      assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
+    end
+
+    test "valid email update changeset works", %{user: user} do
+      changeset =
+        User.email_changeset(user, %{
+          name: user.name,
+          email: "cornholio@example.com"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :email) == "cornholio@example.com"
+    end
+
+    test "invalid email update changeset fails", %{user: user} do
+      changeset =
+        User.email_changeset(user, %{
+          name: user.name,
+          email: "invalidemail.edu"
+        })
+
+      refute changeset.valid?
+      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+    end
+
+    test "valid password update changeset works", %{user: user} do
+      changeset =
+        User.password_changeset(user, %{
+          name: user.name,
+          email: user.email,
+          password: "NewPa$$word123!"
+        })
+
+      assert changeset.valid?
+      assert get_change(changeset, :hashed_password)
+      refute get_change(changeset, :password)
+    end
+
+    test "invalid password update changeset fails", %{user: user} do
+      changeset =
+        User.password_changeset(user, %{
+          name: user.name,
+          email: user.email,
+          password: "short"
+        })
+
+      refute changeset.valid?
+
+      assert password:
+               {"must be between 6 and 35 characters",
+                [count: 6, validation: :length, kind: :min, type: :string]} in changeset.errors
     end
   end
 end
