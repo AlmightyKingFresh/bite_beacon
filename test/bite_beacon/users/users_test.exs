@@ -9,6 +9,8 @@ defmodule BiteBeacon.UsersTest do
   alias BiteBeacon.Users.{User, Users, UserToken}
   alias BiteBeacon.Repo
 
+  @password "Pa$$word"
+
   describe "registration changeset/2" do
     setup do
       user = build(:user)
@@ -20,7 +22,7 @@ defmodule BiteBeacon.UsersTest do
         User.registration_changeset(%User{}, %{
           name: user.name,
           email: user.email,
-          password: user.password
+          password: @password
         })
 
       assert changeset.valid?
@@ -31,7 +33,7 @@ defmodule BiteBeacon.UsersTest do
         User.registration_changeset(%User{}, %{
           name: "ai",
           email: user.email,
-          password: user.password
+          password: @password
         })
 
       assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
@@ -43,7 +45,7 @@ defmodule BiteBeacon.UsersTest do
         User.registration_changeset(%User{}, %{
           name: "thisisaveryveryveryverylongname",
           email: user.email,
-          password: user.password
+          password: @password
         })
 
       assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
@@ -55,7 +57,7 @@ defmodule BiteBeacon.UsersTest do
         User.registration_changeset(%User{}, %{
           name: user.name,
           email: "invalidemail.org",
-          password: user.password
+          password: @password
         })
 
       assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
@@ -67,7 +69,7 @@ defmodule BiteBeacon.UsersTest do
         User.registration_changeset(%User{}, %{
           name: user.name,
           email: "someridiculouslylongemailaddress@domain.com",
-          password: user.password
+          password: @password
         })
 
       assert %{email: ["must be at most 35 characters"]} = errors_on(changeset)
@@ -238,6 +240,21 @@ defmodule BiteBeacon.UsersTest do
       assert password:
                {"must be between 6 and 35 characters",
                 [count: 6, validation: :length, kind: :min, type: :string]} in changeset.errors
+    end
+  end
+
+  describe " User CRUD operations" do
+    setup do
+      user1 = insert(:user)
+      user2 = insert(:user)
+      user3 = insert(:user)
+      %{user1: user1, user2: user2, user3: user3}
+    end
+
+    test "list_users/0 returns all users", %{user1: user1, user2: user2, user3: user3} do
+      users = Users.list_users()
+      assert length(users) == 3
+      assert [user1, user2, user3] == users
     end
   end
 end
