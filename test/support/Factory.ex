@@ -15,9 +15,9 @@ defmodule BiteBeacon.Factory do
   def user_factory do
     %User{
       email: Internet.email(),
-      password: "Pa$$word",
       name: Internet.user_name(),
-      confirmed_at: DateTime.utc_now()
+      confirmed_at: DateTime.utc_now(),
+      hashed_password: Bcrypt.hash_pwd_salt("Pa$$word")
     }
   end
 
@@ -26,7 +26,7 @@ defmodule BiteBeacon.Factory do
       first_name: Person.first_name(),
       last_name: Person.last_name(),
       email: Internet.email(),
-      password: "Pa$$word",
+      hashed_password: Bcrypt.hash_pwd_salt("Pa$$word"),
       permit_id: Gov.Us.ein(),
       permit_status:
         Enum.random([
