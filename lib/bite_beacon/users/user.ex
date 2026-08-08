@@ -49,13 +49,13 @@ defmodule BiteBeacon.Users.User do
     |> validate_password(opts)
   end
 
-  defp validate_name(changeset) do
+  def validate_name(changeset) do
     changeset
     |> validate_required([:name])
     |> validate_length(:name, min: 4, max: 30, message: "must be between 4 and 30 characters")
   end
 
-  defp validate_email(changeset, opts) do
+  def validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
@@ -63,7 +63,7 @@ defmodule BiteBeacon.Users.User do
     |> maybe_validate_unique_email(opts)
   end
 
-  defp validate_password(changeset, opts) do
+  def validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
     |> validate_length(:password, min: 6, max: 35, message: "must be between 6 and 35 characters")

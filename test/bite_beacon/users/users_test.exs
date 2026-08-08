@@ -28,7 +28,7 @@ defmodule BiteBeacon.UsersTest do
       assert changeset.valid?
     end
 
-    test "too few characters in name registartion changeset fails", %{user: user} do
+    test "too few characters in name registration changeset fails", %{user: user} do
       changeset =
         User.registration_changeset(%User{}, %{
           name: "ai",
@@ -254,7 +254,143 @@ defmodule BiteBeacon.UsersTest do
     test "list_users/0 returns all users", %{user1: user1, user2: user2, user3: user3} do
       users = Users.list_users()
       assert length(users) == 3
-      assert [user1, user2, user3] == users
+      assert user1 in users
+      assert user2 in users
+      assert user3 in users
+    end
+
+    test "list_users/0 returns nothing table is empty" do
+      Repo.delete_all(User)
+      users = Users.list_users()
+      assert users == []
+    end
+
+    test "get_user/1 returns the user with given id", %{user2: user2} do
+      %User{id: id, email: email} = Users.get_user(user2.id)
+
+      assert user2.id == id
+      assert user2.email == email
+    end
+
+    test "get_user/1 returns nothing when no user with given id exists" do
+      user = Users.get_user(Ecto.UUID.generate())
+
+      assert user == nil
+    end
+
+    test "get_user_by_email/1 returns the user with given email", %{user1: user1} do
+      %User{email: email, id: id} = Users.get_user_by_email(user1.email)
+
+      assert user1.email == email
+      assert user1.id == id
+    end
+
+    test "get_user_by_name/1 returns the user with given name", %{user3: user3} do
+      %User{name: name, id: id} = Users.get_user_by_name(user3.name)
+
+      assert user3.name == name
+      assert user3.id == id
+    end
+
+    test "register_user/1 creates a user with valid data" do
+      valid_attrs = %{
+        name: "Valid User",
+        email: "validuser@example.com",
+        password: "Pa$$word"
+      }
+
+      {:ok, user} = Users.register_user(valid_attrs)
+      assert user.name == "Valid User"
+      assert user.email == "validuser@example.com"
+      assert user.hashed_password != nil
+    end
+
+    test "register_user/1 fails if email already exists", %{user3: user3} do
+      invalid_attrs = %{
+        name: "Ichigo Kurosaki",
+        email: user3.email,
+        password: "Pa$$word"
+      }
+
+      {:error, changeset} = Users.register_user(invalid_attrs)
+      assert %{email: ["has already been taken"]} == errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "register_user/1 returns error changeset with invalid data" do
+      invalid_attrs = %{
+        name: "a",
+        email: "invalidemail",
+        password: "short"
+      }
+
+      {:error, changeset} = Users.register_user(invalid_attrs)
+      refute changeset.valid?
+      assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
+      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+
+      assert password:
+               {"must be between 6 and 35 characters",
+                [count: 6, validation: :length, kind: :min, type: :string]} in changeset.errors
+    end
+
+    test "update_user_name/2 changes the user's name with valid name change data", %{user1: user1} do
+      valid_attrs = %{name: "Naruto Uzumaki"}
+      {:ok, updated_user} = Users.update_user_name(user1, valid_attrs)
+      assert updated_user.name == "Naruto Uzumaki"
+    end
+
+    test "update_user_name/2 returns error changeset with invalid name change data", %{
+      user2: user2
+    } do
+      invalid_attrs = %{name: "a"}
+      {:error, changeset} = Users.update_user_name(user2, invalid_attrs)
+      refute changeset.valid?
+      assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
+    end
+
+    test "update_user_email/2 changes the user's email with valid email change data", %{
+      user2: user2
+    } do
+      valid_attrs = %{email: "newemail@example.com"}
+      {:ok, updated_user} = Users.update_user_email(user2, valid_attrs)
+      assert updated_user.email == "newemail@example.com"
+    end
+
+    test "update_user_email/2 returns error changeset with invalid email change data", %{
+      user1: user1
+    } do
+      invalid_attrs = %{email: "gwent.org"}
+      {:error, changeset} = Users.update_user_email(user1, invalid_attrs)
+      refute changeset.valid?
+      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+    end
+
+    test "update_user_password/2 changes the user's password with valid password change data", %{
+      user2: user2
+    } do
+      old_hashed_password = user2.hashed_password
+      valid_attrs = %{password: "c0rNy!!!"}
+      {:ok, updated_user} = Users.update_user_password(user2, valid_attrs)
+
+      refute updated_user.hashed_password == old_hashed_password
+    end
+
+    test "update_user_password/2 returns error changeset with invalid password change data", %{
+      user1: user1
+    } do
+      invalid_attrs = %{password: "27"}
+      {:error, changeset} = Users.update_user_password(user1, invalid_attrs)
+
+      refute changeset.valid?
+
+      assert %{
+               password: [
+                 "at least one upper case character",
+                 "at least one lower case character",
+                 "must be between 6 and 35 characters"
+               ]
+             } == errors_on(changeset)
     end
   end
 end
