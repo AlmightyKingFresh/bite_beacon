@@ -63,6 +63,9 @@ defmodule BiteBeacon.Vendors.Vendor do
       :date_notice_of_intent_sent
     ])
     |> validate_required([:permit_id, :permit_status, :email, :first_name, :last_name, :password])
+    |> validate_format(:permit_id, ~r/^\d{2}MFF-\d{4,5}$/,
+      message: "must be in the format ##MFF-#### (e.g. 21MFF-00073)"
+    )
     |> validate_email(opts)
     |> validate_password(opts)
     |> validate_first_name()
@@ -137,11 +140,6 @@ defmodule BiteBeacon.Vendors.Vendor do
     end
   end
 
-  @doc """
-  A vendor changeset for changing the email.
-
-  It requires the email to change otherwise an error is added.
-  """
   def email_changeset(vendor, attrs, opts \\ []) do
     vendor
     |> cast(attrs, [:email])
@@ -152,18 +150,13 @@ defmodule BiteBeacon.Vendors.Vendor do
     end
   end
 
-  @doc """
-  A vendor changeset for changing the password.
+  def name_changeset(vendor, attrs) do
+    vendor
+    |> cast(attrs, [:first_name, :last_name])
+    |> validate_length(:first_name, min: 2, max: 30)
+    |> validate_length(:last_name, min: 2, max: 30)
+  end
 
-  ## Options
-
-    * `:hash_password` - Hashes the password so it can be stored securely
-      in the database and ensures the password field is cleared to prevent
-      leaks in the logs. If password hashing is not needed and clearing the
-      password field is not desired (like when using this changeset for
-      validations on a LiveView form), this option can be set to `false`.
-      Defaults to `true`.
-  """
   def password_changeset(vendor, attrs, opts \\ []) do
     vendor
     |> cast(attrs, [:password])
@@ -171,9 +164,36 @@ defmodule BiteBeacon.Vendors.Vendor do
     |> validate_password(opts)
   end
 
-  @doc """
-  Confirms the account by setting `confirmed_at`.
-  """
+  def permit_id_changeset(vendor, attrs) do
+    vendor
+    |> cast(attrs, [:permit_id])
+    |> validate_format(:permit_id, ~r/^\d{2}MFF-\d{4,5}$/,
+      message: "must be in the format ##MFF-#### (e.g. 21MFF-00073)"
+    )
+  end
+
+  def permit_status_changeset(vendor, attrs) do
+    vendor
+    |> cast(attrs, [:permit_status])
+    |> validate_inclusion(:permit_status, [
+      "APPROVED",
+      "EXPIRED",
+      "REQUESTED",
+      "SUSPEND",
+      "ISSUED"
+    ])
+  end
+
+  def permit_metadata_changeset(vendor, attrs) do
+    vendor
+    |> cast(attrs, [
+      :permit_approval_date,
+      :permit_application_received,
+      :permit_expiration_date,
+      :date_notice_of_intent_sent
+    ])
+  end
+
   def confirm_changeset(vendor) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
     change(vendor, confirmed_at: now)

@@ -10,7 +10,7 @@ defmodule BiteBeacon.Factory do
   alias BiteBeacon.Users.User
   alias BiteBeacon.Vendors.Vendor
   alias Faker.DateTime, as: FakeTime
-  alias Faker.{Address, Cannabis, Person, Internet, Lorem, Gov}
+  alias Faker.{Address, Cannabis, Internet, Lorem, Person}
 
   def user_factory do
     %User{
@@ -27,7 +27,7 @@ defmodule BiteBeacon.Factory do
       last_name: Person.last_name(),
       email: Internet.email(),
       hashed_password: Bcrypt.hash_pwd_salt("Pa$$word"),
-      permit_id: Gov.Us.ein(),
+      permit_id: valid_permit_id(),
       permit_status:
         Enum.random([
           "APPROVED",
@@ -36,11 +36,11 @@ defmodule BiteBeacon.Factory do
           "SUSPEND",
           "ISSUED"
         ]),
-      permit_approval_date: FakeTime.backward(Enum.random(1..500)),
-      permit_application_received: FakeTime.backward(Enum.random(1..500)),
+      permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+      permit_application_received: FakeTime.backward(Enum.random(10..500)),
       prior_permit: Enum.random(0..5),
-      permit_expiration_date: FakeTime.forward(Enum.random(1..500)),
-      date_notice_of_intent_sent: FakeTime.backward(Enum.random(1..500))
+      permit_expiration_date: FakeTime.forward(Enum.random(10..500)),
+      date_notice_of_intent_sent: FakeTime.backward(Enum.random(10..500))
     }
   end
 
@@ -108,5 +108,17 @@ defmodule BiteBeacon.Factory do
       user_id: insert(:user).id,
       facility_id: insert(:facility).id
     }
+  end
+
+  def valid_permit_id do
+    year = Enum.random(10..26) |> Integer.to_string() |> String.pad_leading(2, "0")
+
+    number =
+      System.unique_integer([:positive])
+      |> rem(99_999)
+      |> Integer.to_string()
+      |> String.pad_leading(4, "0")
+
+    "#{year}MFF-#{number}"
   end
 end
