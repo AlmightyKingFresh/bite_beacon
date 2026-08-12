@@ -30,7 +30,8 @@ defmodule BiteBeacon.Vendors.Vendors do
   end
 
   def change_vendor_email(vendor, attrs \\ %{}) do
-    Vendor.email_changeset(vendor, attrs, validate_email: false)
+    Vendor.email_changeset(vendor, attrs)
+    |> Repo.update()
   end
 
   def apply_vendor_email(vendor, password, attrs) do
@@ -40,38 +41,6 @@ defmodule BiteBeacon.Vendors.Vendors do
     |> Ecto.Changeset.apply_action(:update)
   end
 
-  # def update_vendor_email(vendor, token) do
-  #   context = "change:#{vendor.email}"
-
-  #   with {:ok, query} <- VendorToken.verify_change_email_token_query(token, context),
-  #        %VendorToken{sent_to: email} <- Repo.one(query),
-  #        {:ok, _} <- Repo.transaction(vendor_email_multi(vendor, email, context)) do
-  #     :ok
-  #   else
-  #     _ -> :error
-  #   end
-  # end
-
-  # defp vendor_email_multi(vendor, email, context) do
-  #   changeset =
-  #     vendor
-  #     |> Vendor.email_changeset(%{email: email})
-  #     |> Vendor.confirm_changeset()
-
-  #   Ecto.Multi.new()
-  #   |> Ecto.Multi.update(:vendor, changeset)
-  #   |> Ecto.Multi.delete_all(:tokens, VendorToken.by_vendor_and_contexts_query(vendor, [context]))
-  # end
-
-  @doc ~S"""
-  Delivers the update email instructions to the given vendor.
-
-  ## Examples
-
-      iex> deliver_vendor_update_email_instructions(vendor, current_email, &url(~p"/vendors/settings/confirm_email/#{&1}"))
-      {:ok, %{to: ..., body: ...}}
-
-  """
   def deliver_vendor_update_email_instructions(
         %Vendor{} = vendor,
         current_email,
@@ -95,7 +64,8 @@ defmodule BiteBeacon.Vendors.Vendors do
 
   """
   def change_vendor_password(vendor, attrs \\ %{}) do
-    Vendor.password_changeset(vendor, attrs, hash_password: false)
+    Vendor.password_changeset(vendor, attrs)
+    |> Repo.update()
   end
 
   @doc """

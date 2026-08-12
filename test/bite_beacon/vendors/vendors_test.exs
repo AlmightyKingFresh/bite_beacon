@@ -253,8 +253,124 @@ defmodule BiteBeacon.VendorsTest do
       %{vendor1: vendor1, vendor2: vendor2, vendor3: vendor3}
     end
 
-    test "list_vendors/0 returns all vendors", %{vendor1: vendor1, vendor2: vendor2, vendor3: vendor3} do
+    test "list_vendors/0 returns all vendors", %{
+      vendor1: vendor1,
+      vendor2: vendor2,
+      vendor3: vendor3
+    } do
+      vendors = Vendors.list_vendors()
+      assert vendor1 in vendors
+      assert vendor2 in vendors
+      assert vendor3 in vendors
+    end
 
+    test "list vendors/0 returns nothing if table is empty" do
+      Repo.delete_all(Vendor)
+      vendors = Vendors.list_vendors()
+      assert vendors == []
+    end
+
+    test "get_vendor/1 returns vendor with id", %{vendor3: vendor3} do
+      fetched_vendor = Vendors.get_vendor(vendor3.id)
+      assert fetched_vendor == vendor3
+    end
+
+    test "get_vendor/1 returns nothing when id isn't present in db" do
+      fectched_vendor = Vendors.get_vendor(Ecto.UUID.generate())
+      assert fectched_vendor == nil
+    end
+
+    test "get_vendor_by_email/1 returns vendor when email is in db", %{vendor2: vendor2} do
+      fetched_vendor = Vendors.get_vendor_by_email(vendor2.email)
+      assert fetched_vendor == vendor2
+    end
+
+    test "get_vendor_by_email/1 returns nothing if email doesn't exist in db" do
+      fetched_vendor = Vendors.get_vendor_by_email(Internet.email())
+      assert fetched_vendor == nil
+    end
+
+    test "register_vendor/1 inserts vendor into the db" do
+      valid_attrs = %{
+        first_name: Person.first_name(),
+        last_name: Person.last_name(),
+        email: Internet.email(),
+        password: "Pa$$word",
+        permit_id: valid_permit_id(),
+        permit_status:
+          Enum.random([
+            "APPROVED",
+            "EXPIRED",
+            "REQUESTED",
+            "SUSPEND",
+            "ISSUED"
+          ]),
+        permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+        permit_application_received: FakeTime.backward(Enum.random(10..500)),
+        prior_permit: Enum.random(0..5),
+        permit_expiration_date: FakeTime.forward(Enum.random(10..500)),
+        date_notice_of_intent_sent: FakeTime.backward(Enum.random(10..500))
+      }
+
+      {:ok, vendor} = Vendors.register_vendor(valid_attrs)
+
+      assert Vendors.get_vendor_by_email(valid_attrs.email) ===
+               Vendors.get_vendor_by_email(vendor.email)
+
+      assert Vendors.get_vendor(vendor.id) === Vendors.get_vendor_by_email(valid_attrs.email)
+    end
+
+    test "register_vendor fails with bad data" do
+      invalid_attrs = %{
+        first_name: 33,
+        last_name: "h",
+        email: "33.org",
+        password: 3344,
+        permit_id: "hhhh1345*()",
+        permit_status: "not sure",
+        permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+        permit_application_received: FakeTime.backward(Enum.random(10..500)),
+        prior_permit: Enum.random(0..5),
+        permit_expiration_date: FakeTime.forward(Enum.random(10..500)),
+        date_notice_of_intent_sent: FakeTime.backward(Enum.random(10..500))
+      }
+
+      {:error, changeset} = Vendors.register_vendor(invalid_attrs)
+
+      assert errors_on(changeset) == %{
+               password: ["is invalid"],
+               email: ["must have the @ sign and no spaces"],
+               permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"],
+               first_name: ["is invalid"],
+               last_name: ["should be at least 2 character(s)"],
+               permit_status: ["is invalid"]
+             }
+    end
+
+    test "change_vendor_email/2 works with valid email and vendor", %{vendor1: vendor1} do
+      old_email = vendor1.email
+
+      {:ok, updated_vendor} =
+        Vendors.change_vendor_email(vendor1, %{email: "lientenantdan@goarmy.org"})
+
+      updated_vendor.email
+
+      assert old_email != updated_vendor.email
+    end
+
+    test "change_vendor_email/2 returns error when new email isn't valid", %{vendor1: vendor1} do
+      {:error, changeset} = Vendors.change_vendor_email(vendor1, %{email: "kurtisblow.edu"})
+
+      assert errors_on(changeset) == %{email: ["must have the @ sign and no spaces"]}
+    end
+
+    test "change_vendor_password/2 works with valid password and vendor", %{vendor2: vendor2} do
+      old_hashed_password = vendor2.hashed_password
+
+      {:ok, updated_vendor} =
+        Vendors.change_vendor_password(vendor2, %{password: "!Q2w#E4r"}) |> IO.inspect()
+
+      refute updated_vendor.hashed_password == old_hashed_password
     end
   end
 end
