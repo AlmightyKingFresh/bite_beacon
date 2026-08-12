@@ -244,4 +244,17 @@ defmodule BiteBeacon.VendorsTest do
       refute changeset.valid?
     end
   end
+
+  describe " Vendor CRUD" do
+    setup do
+      vendor1 = insert(:vendor)
+      vendor2 = insert(:vendor)
+      vendor3 = insert(:vendor)
+      %{vendor1: vendor1, vendor2: vendor2, vendor3: vendor3}
+    end
+
+    test "list_vendors/0 returns all vendors", %{vendor1: vendor1, vendor2: vendor2, vendor3: vendor3} do
+
+    end
+  end
 end

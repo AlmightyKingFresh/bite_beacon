@@ -1,4 +1,8 @@
 defmodule BiteBeacon.Users.User do
+  @moduledoc """
+  User schema and field changesets
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
