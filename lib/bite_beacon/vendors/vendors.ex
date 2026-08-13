@@ -25,22 +25,34 @@ defmodule BiteBeacon.Vendors.Vendors do
     |> Repo.insert()
   end
 
-  def change_vendor_registration(%Vendor{} = vendor, attrs \\ %{}) do
+  def update_vendor_registration(%Vendor{} = vendor, attrs \\ %{}) do
     Vendor.registration_changeset(vendor, attrs, hash_password: false, validate_email: false)
   end
 
-  def change_vendor_email(vendor, attrs \\ %{}) do
+  def update_vendor_email(vendor, attrs \\ %{}) do
     Vendor.email_changeset(vendor, attrs)
     |> Repo.update()
   end
 
-  def change_vendor_password(vendor, attrs \\ %{}) do
+  def update_vendor_password(vendor, attrs \\ %{}) do
     Vendor.password_changeset(vendor, attrs)
     |> Repo.update()
   end
 
-  def change_vendor_name(vendor, attrs) do
+  def update_vendor_name(vendor, attrs) do
     Vendor.name_changeset(vendor, attrs)
+    |> Repo.update()
+  end
+
+  def update_permit_status(vendor, attrs) do
+    vendor
+    |> Vendor.permit_status_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_permit_id(vendor, attrs) do
+    vendor
+    |> Vendor.permit_id_changeset(attrs)
     |> Repo.update()
   end
 

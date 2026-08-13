@@ -165,7 +165,7 @@ defmodule BiteBeacon.VendorsTest do
       changeset = Vendor.name_changeset(%Vendor{}, %{first_name: "K"})
 
       assert %{first_name: ["should be at least 2 character(s)"]} ==
-               errors_on(changeset) |> IO.inspect()
+               errors_on(changeset)
 
       refute changeset.valid?
     end
@@ -347,34 +347,34 @@ defmodule BiteBeacon.VendorsTest do
              }
     end
 
-    test "change_vendor_email/2 works with valid email and existing vendor", %{vendor1: vendor1} do
+    test "update_vendor_email/2 works with valid email and existing vendor", %{vendor1: vendor1} do
       old_email = vendor1.email
 
       {:ok, updated_vendor} =
-        Vendors.change_vendor_email(vendor1, %{email: "lientenantdan@goarmy.org"})
+        Vendors.update_vendor_email(vendor1, %{email: "lientenantdan@goarmy.org"})
 
       updated_vendor.email
 
       assert old_email != updated_vendor.email
     end
 
-    test "change_vendor_email/2 returns error when new email isn't valid", %{vendor1: vendor1} do
-      {:error, changeset} = Vendors.change_vendor_email(vendor1, %{email: "kurtisblow.edu"})
+    test "update_vendor_email/2 returns error when new email isn't valid", %{vendor1: vendor1} do
+      {:error, changeset} = Vendors.update_vendor_email(vendor1, %{email: "kurtisblow.edu"})
 
       assert errors_on(changeset) == %{email: ["must have the @ sign and no spaces"]}
     end
 
-    test "change_vendor_password/2 works with valid password and vendor", %{vendor2: vendor2} do
+    test "update_vendor_password/2 works with valid password and vendor", %{vendor2: vendor2} do
       old_hashed_password = vendor2.hashed_password
 
       {:ok, updated_vendor} =
-        Vendors.change_vendor_password(vendor2, %{password: "!Q2w#E4r"})
+        Vendors.update_vendor_password(vendor2, %{password: "!Q2w#E4r"})
 
       refute updated_vendor.hashed_password == old_hashed_password
     end
 
-    test "change_vendor_password/2 errors with bad password", %{vendor3: vendor3} do
-      {:error, changeset} = Vendors.change_vendor_password(vendor3, %{password: "badpassword"})
+    test "update_vendor_password/2 errors with bad password", %{vendor3: vendor3} do
+      {:error, changeset} = Vendors.update_vendor_password(vendor3, %{password: "badpassword"})
 
       assert errors_on(changeset) == %{
                password: [
@@ -384,38 +384,38 @@ defmodule BiteBeacon.VendorsTest do
              }
     end
 
-    test "change_vendor_name/2 changes existing vendor's first name with valid data", %{
+    test "update_vendor_name/2 changes existing vendor's first name with valid data", %{
       vendor1: vendor1
     } do
       %Vendor{first_name: old_first_name} = vendor1
 
       {:ok, %Vendor{first_name: new_first_name}} =
-        Vendors.change_vendor_name(vendor1, %{first_name: "First_Name"})
+        Vendors.update_vendor_name(vendor1, %{first_name: "First_Name"})
 
       assert old_first_name != new_first_name
       assert new_first_name == "First_Name"
     end
 
-    test "change_vendor_name/2 changes existing vendor's last name with valid data", %{
+    test "update_vendor_name/2 changes existing vendor's last name with valid data", %{
       vendor1: vendor1
     } do
       %Vendor{last_name: old_last_name} = vendor1
 
       {:ok, %Vendor{last_name: new_last_name}} =
-        Vendors.change_vendor_name(vendor1, %{last_name: "Last_Name"})
+        Vendors.update_vendor_name(vendor1, %{last_name: "Last_Name"})
 
       assert old_last_name != new_last_name
       assert new_last_name == "Last_Name"
     end
 
-    test "change_vendor_name/2 changes existing vendor's first and last names together with valid data",
+    test "update_vendor_name/2 changes existing vendor's first and last names together with valid data",
          %{
            vendor1: vendor1
          } do
       %Vendor{first_name: old_first_name, last_name: old_last_name} = vendor1
 
       {:ok, %Vendor{first_name: new_first_name, last_name: new_last_name}} =
-        Vendors.change_vendor_name(vendor1, %{first_name: "First_Name", last_name: "Last_Name"})
+        Vendors.update_vendor_name(vendor1, %{first_name: "First_Name", last_name: "Last_Name"})
 
       assert old_first_name != new_first_name
       assert new_first_name == "First_Name"
@@ -423,27 +423,62 @@ defmodule BiteBeacon.VendorsTest do
       assert new_last_name == "Last_Name"
     end
 
-    test "change_vendor_name/2 errors if new first name is bad", %{vendor2: vendor2} do
-      {:error, changeset} = Vendors.change_vendor_name(vendor2, %{first_name: "J"})
+    test "update_vendor_name/2 errors if new first name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_vendor_name(vendor2, %{first_name: "J"})
 
       assert errors_on(changeset) == %{first_name: ["should be at least 2 character(s)"]}
     end
 
-    test "change_vendor_name/2 errors if new last name is bad", %{vendor2: vendor2} do
-      {:error, changeset} = Vendors.change_vendor_name(vendor2, %{last_name: "J"})
+    test "update_vendor_name/2 errors if new last name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_vendor_name(vendor2, %{last_name: "J"})
 
       assert errors_on(changeset) == %{last_name: ["should be at least 2 character(s)"]}
     end
 
-    test "change_vendor_name/2 errors if either new first or last name is bad", %{
+    test "update_vendor_name/2 errors if either new first or last name is bad", %{
       vendor2: vendor2
     } do
       {:error, changeset} =
-        Vendors.change_vendor_name(vendor2, %{first_name: "J", last_name: "7"})
+        Vendors.update_vendor_name(vendor2, %{first_name: "J", last_name: "7"})
 
       assert errors_on(changeset) == %{
                first_name: ["should be at least 2 character(s)"],
                last_name: ["should be at least 2 character(s)"]
+             }
+    end
+
+    test "update_permit_status/2 changes status with valid data" do
+      vendor = insert(:vendor, permit_status: "ISSUED")
+
+      %Vendor{permit_status: old_permit_status} = vendor
+
+      {:ok, %Vendor{permit_status: new_permit_status}} =
+        Vendors.update_permit_status(vendor, %{permit_status: "APPROVED"})
+
+      assert old_permit_status != new_permit_status
+      assert new_permit_status == "APPROVED"
+    end
+
+    test "update_permit_status/2 errors if incoming status is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_permit_status(vendor2, %{permit_status: "Messed Up"})
+      assert errors_on(changeset) == %{permit_status: ["is invalid"]}
+    end
+
+    test "update_permit_status/2 works with valid permit id", %{vendor3: vendor3} do
+      %Vendor{permit_id: old_permit_id} = vendor3
+
+      {:ok, %Vendor{permit_id: new_permit_id}} =
+        Vendors.update_permit_id(vendor3, %{permit_id: "25MFF-12345"})
+
+      refute old_permit_id == new_permit_id
+      assert new_permit_id == "25MFF-12345"
+    end
+
+    test "update_permit_status/2 errors with invalid permit id value" do
+      {:error, changeset} = Vendors.update_permit_id(%Vendor{}, %{permit_id: "abc123"})
+
+      assert errors_on(changeset) == %{
+               permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"]
              }
     end
   end

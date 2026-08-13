@@ -111,7 +111,7 @@ defmodule BiteBeacon.Factory do
   end
 
   def valid_permit_id do
-    year = Enum.random(10..26) |> Integer.to_string() |> String.pad_leading(2, "0")
+    year = Enum.random(16..26) |> Integer.to_string() |> String.pad_leading(2, "0")
 
     number =
       System.unique_integer([:positive])
