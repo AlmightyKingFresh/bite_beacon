@@ -347,7 +347,7 @@ defmodule BiteBeacon.VendorsTest do
              }
     end
 
-    test "change_vendor_email/2 works with valid email and vendor", %{vendor1: vendor1} do
+    test "change_vendor_email/2 works with valid email and existing vendor", %{vendor1: vendor1} do
       old_email = vendor1.email
 
       {:ok, updated_vendor} =
@@ -368,9 +368,83 @@ defmodule BiteBeacon.VendorsTest do
       old_hashed_password = vendor2.hashed_password
 
       {:ok, updated_vendor} =
-        Vendors.change_vendor_password(vendor2, %{password: "!Q2w#E4r"}) |> IO.inspect()
+        Vendors.change_vendor_password(vendor2, %{password: "!Q2w#E4r"})
 
       refute updated_vendor.hashed_password == old_hashed_password
+    end
+
+    test "change_vendor_password/2 errors with bad password", %{vendor3: vendor3} do
+      {:error, changeset} = Vendors.change_vendor_password(vendor3, %{password: "badpassword"})
+
+      assert errors_on(changeset) == %{
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character"
+               ]
+             }
+    end
+
+    test "change_vendor_name/2 changes existing vendor's first name with valid data", %{
+      vendor1: vendor1
+    } do
+      %Vendor{first_name: old_first_name} = vendor1
+
+      {:ok, %Vendor{first_name: new_first_name}} =
+        Vendors.change_vendor_name(vendor1, %{first_name: "First_Name"})
+
+      assert old_first_name != new_first_name
+      assert new_first_name == "First_Name"
+    end
+
+    test "change_vendor_name/2 changes existing vendor's last name with valid data", %{
+      vendor1: vendor1
+    } do
+      %Vendor{last_name: old_last_name} = vendor1
+
+      {:ok, %Vendor{last_name: new_last_name}} =
+        Vendors.change_vendor_name(vendor1, %{last_name: "Last_Name"})
+
+      assert old_last_name != new_last_name
+      assert new_last_name == "Last_Name"
+    end
+
+    test "change_vendor_name/2 changes existing vendor's first and last names together with valid data",
+         %{
+           vendor1: vendor1
+         } do
+      %Vendor{first_name: old_first_name, last_name: old_last_name} = vendor1
+
+      {:ok, %Vendor{first_name: new_first_name, last_name: new_last_name}} =
+        Vendors.change_vendor_name(vendor1, %{first_name: "First_Name", last_name: "Last_Name"})
+
+      assert old_first_name != new_first_name
+      assert new_first_name == "First_Name"
+      assert old_last_name != new_last_name
+      assert new_last_name == "Last_Name"
+    end
+
+    test "change_vendor_name/2 errors if new first name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.change_vendor_name(vendor2, %{first_name: "J"})
+
+      assert errors_on(changeset) == %{first_name: ["should be at least 2 character(s)"]}
+    end
+
+    test "change_vendor_name/2 errors if new last name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.change_vendor_name(vendor2, %{last_name: "J"})
+
+      assert errors_on(changeset) == %{last_name: ["should be at least 2 character(s)"]}
+    end
+
+    test "change_vendor_name/2 errors if either new first or last name is bad", %{
+      vendor2: vendor2
+    } do
+      {:error, changeset} =
+        Vendors.change_vendor_name(vendor2, %{first_name: "J", last_name: "7"})
+
+      assert errors_on(changeset) == %{
+               first_name: ["should be at least 2 character(s)"],
+               last_name: ["should be at least 2 character(s)"]
+             }
     end
   end
 end

@@ -34,6 +34,16 @@ defmodule BiteBeacon.Vendors.Vendors do
     |> Repo.update()
   end
 
+  def change_vendor_password(vendor, attrs \\ %{}) do
+    Vendor.password_changeset(vendor, attrs)
+    |> Repo.update()
+  end
+
+  def change_vendor_name(vendor, attrs) do
+    Vendor.name_changeset(vendor, attrs)
+    |> Repo.update()
+  end
+
   def apply_vendor_email(vendor, password, attrs) do
     vendor
     |> Vendor.email_changeset(attrs)
@@ -41,35 +51,21 @@ defmodule BiteBeacon.Vendors.Vendors do
     |> Ecto.Changeset.apply_action(:update)
   end
 
-  def deliver_vendor_update_email_instructions(
-        %Vendor{} = vendor,
-        current_email,
-        update_email_url_fun
-      )
-      when is_function(update_email_url_fun, 1) do
-    {encoded_token, vendor_token} =
-      VendorToken.build_email_token(vendor, "change:#{current_email}")
+  # def deliver_vendor_update_email_instructions(
+  #       %Vendor{} = vendor,
+  #       current_email,
+  #       update_email_url_fun
+  #     )
+  #     when is_function(update_email_url_fun, 1) do
+  #   {encoded_token, vendor_token} =
+  #     VendorToken.build_email_token(vendor, "change:#{current_email}")
 
-    Repo.insert!(vendor_token)
-    VendorNotifier.deliver_update_email_instructions(vendor, update_email_url_fun.(encoded_token))
-  end
+  #   Repo.insert!(vendor_token)
+  #   VendorNotifier.deliver_update_email_instructions(vendor, update_email_url_fun.(encoded_token))
+  # end
 
   @doc """
   Returns an `%Ecto.Changeset{}` for changing the vendor password.
-
-  ## Examples
-
-      iex> change_vendor_password(vendor)
-      %Ecto.Changeset{data: %Vendor{}}
-
-  """
-  def change_vendor_password(vendor, attrs \\ %{}) do
-    Vendor.password_changeset(vendor, attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Updates the vendor password.
 
   ## Examples
 
