@@ -25,9 +25,10 @@ defmodule BiteBeacon.Vendors.Vendors do
     |> Repo.insert()
   end
 
-  def update_vendor_registration(%Vendor{} = vendor, attrs \\ %{}) do
-    Vendor.registration_changeset(vendor, attrs, hash_password: false, validate_email: false)
-  end
+  # not needed currently
+  # def update_vendor_registration(%Vendor{} = vendor, attrs \\ %{}) do
+  #   Vendor.registration_changeset(vendor, attrs, hash_password: false, validate_email: false)
+  # end
 
   def update_vendor_email(vendor, attrs \\ %{}) do
     Vendor.email_changeset(vendor, attrs)

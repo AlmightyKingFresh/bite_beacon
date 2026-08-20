@@ -464,7 +464,7 @@ defmodule BiteBeacon.VendorsTest do
       assert errors_on(changeset) == %{permit_status: ["is invalid"]}
     end
 
-    test "update_permit_status/2 works with valid permit id", %{vendor3: vendor3} do
+    test "update_permit_id/2 works with valid permit id", %{vendor3: vendor3} do
       %Vendor{permit_id: old_permit_id} = vendor3
 
       {:ok, %Vendor{permit_id: new_permit_id}} =
@@ -474,12 +474,60 @@ defmodule BiteBeacon.VendorsTest do
       assert new_permit_id == "25MFF-12345"
     end
 
-    test "update_permit_status/2 errors with invalid permit id value" do
-      {:error, changeset} = Vendors.update_permit_id(%Vendor{}, %{permit_id: "abc123"})
+    test "update_permit_id/2 errors with invalid permit id value", %{vendor3: vendor3} do
+      {:error, changeset} = Vendors.update_permit_id(vendor3, %{permit_id: "abc123"})
 
       assert errors_on(changeset) == %{
                permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"]
              }
+    end
+
+    test "update_permit_id/2 errors when incoming permit_id change uses a value that exists on a different vendor already",
+         %{vendor1: vendor1, vendor2: vendor2} do
+      %Vendor{permit_id: existing_permit_id} = vendor1
+
+      assert_raise Ecto.ConstraintError, fn ->
+        Vendors.update_permit_id(vendor2, %{permit_id: existing_permit_id})
+      end
+    end
+
+    test "apply_vendor_email/3 returns updated vendor when current password and new email are valid" do
+      password = "Val1d!Password"
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt(password))
+
+      {:ok, updated_vendor} =
+        Vendors.apply_vendor_email(vendor, password, %{email: "newemail@example.com"})
+
+      assert updated_vendor.email == "newemail@example.com"
+    end
+
+    test "apply_vendor_email/3 returns error changeset when current password is wrong" do
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt("Correct!Pass1"))
+
+      {:error, changeset} =
+        Vendors.apply_vendor_email(vendor, "WrongPassword1!", %{email: "newemail@example.com"})
+
+      assert %{current_password: ["is not valid"]} = errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "apply_vendor_email/3 returns error changeset when new email is badly formatted, even with correct password" do
+      password = "Val1d!Password"
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt(password))
+
+      {:error, changeset} =
+        Vendors.apply_vendor_email(vendor, password, %{email: "not-a-valid-email"})
+
+      assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "valid_password/2 works correctly when password is valid", %{vendor1: vendor1} do
+      assert Vendor.valid_password?(vendor1, "Pa$$word")
+    end
+
+    test "valid_password/2 works for invalid password", %{vendor2: vendor2} do
+      refute Vendor.valid_password?(vendor2, "password")
     end
   end
 end
