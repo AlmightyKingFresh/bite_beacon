@@ -4,6 +4,8 @@ defmodule BiteBeacon.Facilities.Facility do
 
   @primary_key {:id, :integer, autogenerate: false}
 
+  @type t :: %__MODULE__{}
+
   schema "facilities" do
     field :type, :string
     field :cnn, :integer
