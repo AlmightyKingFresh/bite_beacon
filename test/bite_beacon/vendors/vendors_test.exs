@@ -1,517 +1,533 @@
 defmodule BiteBeacon.VendorsTest do
-  use BiteBeacon.DataCase
+  @moduledoc """
+  Test suite for Vendors
+  """
+  use BiteBeacon.DataCase, async: true
 
-  import BiteBeacon.VendorFixtures
-  alias BiteBeacon.Vendors.{Vendor, Vendors, VendorToken}
+  import BiteBeacon.Factory
 
-  describe "get_vendor_by_email/1" do
-    test "does not return the vendor if the email does not exist" do
-      refute Vendors.get_vendor_by_email("unknown@example.com")
+  alias Faker.DateTime, as: FakeTime
+  alias Faker.{Internet, Person}
+  alias BiteBeacon.Repo
+  alias BiteBeacon.Vendors.{Vendor, Vendors}
+
+  @password "Pa$$word"
+  @permit_id "21MFF-00073"
+
+  describe "registration_changeset/2" do
+    setup do
+      vendor = build(:vendor)
+      %{vendor: vendor}
     end
 
-    test "returns the vendor if the email exists" do
-      %{id: id} = vendor = vendor_fixture()
-      assert %Vendor{id: ^id} = Vendors.get_vendor_by_email(vendor.email)
+    test "valid registration changeset works" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: Person.first_name(),
+          last_name: Person.last_name(),
+          email: Internet.email(),
+          password: @password,
+          permit_status: "APPROVED",
+          permit_id: "21MFF-00073"
+        })
+
+      assert changeset.valid?
+    end
+
+    test "bad permit_id in changeset fails" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: Person.first_name(),
+          last_name: Person.last_name(),
+          email: Internet.email(),
+          password: @password,
+          permit_status: "APPROVED",
+          permit_id: "1234567"
+        })
+
+      assert %{permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"]} ==
+               errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "bad email address in changeset fails" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: Person.first_name(),
+          last_name: Person.last_name(),
+          email: "notanemailaddress.org",
+          password: @password,
+          permit_status: "APPROVED",
+          permit_id: @permit_id
+        })
+
+      assert %{email: ["must have the @ sign and no spaces"]} == errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "bad permit status in changeset fails" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: Person.first_name(),
+          last_name: Person.last_name(),
+          email: Internet.email(),
+          password: @password,
+          permit_status: "33",
+          permit_id: @permit_id
+        })
+
+      assert %{permit_status: ["is invalid"]} == errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "bad first or last name in changeset fails" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: "b",
+          last_name: "4",
+          email: Internet.email(),
+          password: @password,
+          permit_status: "APPROVED",
+          permit_id: "21MFF-00073"
+        })
+
+      assert %{
+               first_name: ["should be at least 2 character(s)"],
+               last_name: ["should be at least 2 character(s)"]
+             } == errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "bad password in changeset fails" do
+      changeset =
+        Vendor.registration_changeset(%Vendor{}, %{
+          first_name: Person.first_name(),
+          last_name: Person.last_name(),
+          email: Internet.email(),
+          password: "badpassword",
+          permit_status: "APPROVED",
+          permit_id: "21MFF-00073"
+        })
+
+      assert %{
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character"
+               ]
+             } == errors_on(changeset)
+
+      refute changeset.valid?
     end
   end
 
-  describe "get_vendor_by_email_and_password/2" do
-    test "does not return the vendor if the email does not exist" do
-      refute Vendors.get_vendor_by_email_and_password("unknown@example.com", "hello world!")
+  describe "vendor update changeset functions" do
+    test "email_changeset/3 works with valid data" do
+      changeset = Vendor.email_changeset(%Vendor{}, %{email: Internet.email()})
+
+      assert changeset.valid?
     end
 
-    test "does not return the vendor if the password is not valid" do
-      vendor = vendor_fixture()
-      refute Vendors.get_vendor_by_email_and_password(vendor.email, "invalid")
+    test "email_chanegeset/3 doesn't work with bad data" do
+      changeset = Vendor.email_changeset(%Vendor{}, %{email: "Notatemail.edu"})
+
+      assert %{email: ["must have the @ sign and no spaces"]} == errors_on(changeset)
+      refute changeset.valid?
     end
 
-    test "returns the vendor if the email and password are valid" do
-      %{id: id} = vendor = vendor_fixture()
+    test "password_changeset/3 works with valid data" do
+      changeset = Vendor.password_changeset(%Vendor{}, %{password: @password})
 
-      assert %Vendor{id: ^id} =
-               Vendors.get_vendor_by_email_and_password(vendor.email, valid_vendor_password())
+      assert changeset.valid?
+    end
+
+    test "password_changeset/3 doesn't work with bad data" do
+      changeset = Vendor.password_changeset(%Vendor{}, %{password: "abcd123"})
+
+      assert %{
+               password: [
+                 "at least one upper case character",
+                 "should be at least 8 character(s)"
+               ]
+             } == errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "name_changeset/3 works with good first name data" do
+      changeset = Vendor.name_changeset(%Vendor{}, %{first_name: "Denzel"})
+
+      assert changeset.valid?
+    end
+
+    test "name_changeset/3 works with bad first name data" do
+      changeset = Vendor.name_changeset(%Vendor{}, %{first_name: "K"})
+
+      assert %{first_name: ["should be at least 2 character(s)"]} ==
+               errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "name_changeset/3 works with good last name data" do
+      changeset = Vendor.name_changeset(%Vendor{}, %{last_name: "Washington"})
+
+      assert changeset.valid?
+    end
+
+    test "name_changeset/3 breaks with bad last name data" do
+      changeset = Vendor.name_changeset(%Vendor{}, %{last_name: "J"})
+
+      assert %{last_name: ["should be at least 2 character(s)"]} ==
+               errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "permit_id_changeset/2 works with valid permit id" do
+      changeset = Vendor.permit_id_changeset(%Vendor{}, %{permit_id: @permit_id})
+
+      assert changeset.valid?
+    end
+
+    test "permit_id_changeset/2 doesn't work with bad permit id" do
+      changeset = Vendor.permit_id_changeset(%Vendor{}, %{permit_id: "52_pairs_of_socks"})
+
+      assert %{permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"]} ==
+               errors_on(changeset)
+
+      refute changeset.valid?
+    end
+
+    test "permit status/2 works with valid permit status" do
+      changeset = Vendor.permit_status_changeset(%Vendor{}, %{permit_status: "ISSUED"})
+
+      assert changeset.valid?
+    end
+
+    test "permit status/2 errors with invalid permit status" do
+      changeset = Vendor.permit_status_changeset(%Vendor{}, %{permit_status: "Um...."})
+
+      assert %{permit_status: ["is invalid"]} == errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "permit_metadata_changeset/2 works with valid data" do
+      changeset =
+        Vendor.permit_metadata_changeset(%Vendor{}, %{
+          permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+          permit_application_received: FakeTime.backward(Enum.random(10..500)),
+          prior_permit: Enum.random(0..5),
+          permit_expiration_date: FakeTime.forward(Enum.random(10..500))
+        })
+
+      assert changeset.valid?
+    end
+
+    test "permit_metadata_changeset/2 errors with invalid data" do
+      changeset =
+        Vendor.permit_metadata_changeset(%Vendor{}, %{
+          permit_approval_date: 29,
+          permit_application_received: "4:44",
+          permit_expiration_date: {:tuple, :tuple},
+          date_notice_of_intent_sent: "xmas"
+        })
+
+      assert %{
+               permit_approval_date: ["is invalid"],
+               permit_application_received: ["is invalid"],
+               permit_expiration_date: ["is invalid"],
+               date_notice_of_intent_sent: ["is invalid"]
+             } = errors_on(changeset)
+
+      refute changeset.valid?
     end
   end
 
-  describe "get_vendor!/1" do
-    test "raises if id is invalid" do
-      assert_raise Ecto.NoResultsError, fn ->
-        Vendors.get_vendor!(-1)
+  describe " Vendor CRUD" do
+    setup do
+      vendor1 = insert(:vendor)
+      vendor2 = insert(:vendor)
+      vendor3 = insert(:vendor)
+      %{vendor1: vendor1, vendor2: vendor2, vendor3: vendor3}
+    end
+
+    test "list_vendors/0 returns all vendors", %{
+      vendor1: vendor1,
+      vendor2: vendor2,
+      vendor3: vendor3
+    } do
+      vendors = Vendors.list_vendors()
+      assert vendor1 in vendors
+      assert vendor2 in vendors
+      assert vendor3 in vendors
+    end
+
+    test "list vendors/0 returns nothing if table is empty" do
+      Repo.delete_all(Vendor)
+      vendors = Vendors.list_vendors()
+      assert vendors == []
+    end
+
+    test "get_vendor/1 returns vendor with id", %{vendor3: vendor3} do
+      fetched_vendor = Vendors.get_vendor(vendor3.id)
+      assert fetched_vendor == vendor3
+    end
+
+    test "get_vendor/1 returns nothing when id isn't present in db" do
+      fectched_vendor = Vendors.get_vendor(Ecto.UUID.generate())
+      assert fectched_vendor == nil
+    end
+
+    test "get_vendor_by_email/1 returns vendor when email is in db", %{vendor2: vendor2} do
+      fetched_vendor = Vendors.get_vendor_by_email(vendor2.email)
+      assert fetched_vendor == vendor2
+    end
+
+    test "get_vendor_by_email/1 returns nothing if email doesn't exist in db" do
+      fetched_vendor = Vendors.get_vendor_by_email(Internet.email())
+      assert fetched_vendor == nil
+    end
+
+    test "register_vendor/1 inserts vendor into the db" do
+      valid_attrs = %{
+        first_name: Person.first_name(),
+        last_name: Person.last_name(),
+        email: Internet.email(),
+        password: "Pa$$word",
+        permit_id: valid_permit_id(),
+        permit_status:
+          Enum.random([
+            "APPROVED",
+            "EXPIRED",
+            "REQUESTED",
+            "SUSPEND",
+            "ISSUED"
+          ]),
+        permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+        permit_application_received: FakeTime.backward(Enum.random(10..500)),
+        prior_permit: Enum.random(0..5),
+        permit_expiration_date: FakeTime.forward(Enum.random(10..500)),
+        date_notice_of_intent_sent: FakeTime.backward(Enum.random(10..500))
+      }
+
+      {:ok, vendor} = Vendors.register_vendor(valid_attrs)
+
+      assert Vendors.get_vendor_by_email(valid_attrs.email) ===
+               Vendors.get_vendor_by_email(vendor.email)
+
+      assert Vendors.get_vendor(vendor.id) === Vendors.get_vendor_by_email(valid_attrs.email)
+    end
+
+    test "register_vendor fails with bad data" do
+      invalid_attrs = %{
+        first_name: 33,
+        last_name: "h",
+        email: "33.org",
+        password: 3344,
+        permit_id: "hhhh1345*()",
+        permit_status: "not sure",
+        permit_approval_date: FakeTime.backward(Enum.random(10..500)),
+        permit_application_received: FakeTime.backward(Enum.random(10..500)),
+        prior_permit: Enum.random(0..5),
+        permit_expiration_date: FakeTime.forward(Enum.random(10..500)),
+        date_notice_of_intent_sent: FakeTime.backward(Enum.random(10..500))
+      }
+
+      {:error, changeset} = Vendors.register_vendor(invalid_attrs)
+
+      assert errors_on(changeset) == %{
+               password: ["is invalid"],
+               email: ["must have the @ sign and no spaces"],
+               permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"],
+               first_name: ["is invalid"],
+               last_name: ["should be at least 2 character(s)"],
+               permit_status: ["is invalid"]
+             }
+    end
+
+    test "update_vendor_email/2 works with valid email and existing vendor", %{vendor1: vendor1} do
+      old_email = vendor1.email
+
+      {:ok, updated_vendor} =
+        Vendors.update_vendor_email(vendor1, %{email: "lientenantdan@goarmy.org"})
+
+      updated_vendor.email
+
+      assert old_email != updated_vendor.email
+    end
+
+    test "update_vendor_email/2 returns error when new email isn't valid", %{vendor1: vendor1} do
+      {:error, changeset} = Vendors.update_vendor_email(vendor1, %{email: "kurtisblow.edu"})
+
+      assert errors_on(changeset) == %{email: ["must have the @ sign and no spaces"]}
+    end
+
+    test "update_vendor_password/2 works with valid password and vendor", %{vendor2: vendor2} do
+      old_hashed_password = vendor2.hashed_password
+
+      {:ok, updated_vendor} =
+        Vendors.update_vendor_password(vendor2, %{password: "!Q2w#E4r"})
+
+      refute updated_vendor.hashed_password == old_hashed_password
+    end
+
+    test "update_vendor_password/2 errors with bad password", %{vendor3: vendor3} do
+      {:error, changeset} = Vendors.update_vendor_password(vendor3, %{password: "badpassword"})
+
+      assert errors_on(changeset) == %{
+               password: [
+                 "at least one digit or punctuation character",
+                 "at least one upper case character"
+               ]
+             }
+    end
+
+    test "update_vendor_name/2 changes existing vendor's first name with valid data", %{
+      vendor1: vendor1
+    } do
+      %Vendor{first_name: old_first_name} = vendor1
+
+      {:ok, %Vendor{first_name: new_first_name}} =
+        Vendors.update_vendor_name(vendor1, %{first_name: "First_Name"})
+
+      assert old_first_name != new_first_name
+      assert new_first_name == "First_Name"
+    end
+
+    test "update_vendor_name/2 changes existing vendor's last name with valid data", %{
+      vendor1: vendor1
+    } do
+      %Vendor{last_name: old_last_name} = vendor1
+
+      {:ok, %Vendor{last_name: new_last_name}} =
+        Vendors.update_vendor_name(vendor1, %{last_name: "Last_Name"})
+
+      assert old_last_name != new_last_name
+      assert new_last_name == "Last_Name"
+    end
+
+    test "update_vendor_name/2 changes existing vendor's first and last names together with valid data",
+         %{
+           vendor1: vendor1
+         } do
+      %Vendor{first_name: old_first_name, last_name: old_last_name} = vendor1
+
+      {:ok, %Vendor{first_name: new_first_name, last_name: new_last_name}} =
+        Vendors.update_vendor_name(vendor1, %{first_name: "First_Name", last_name: "Last_Name"})
+
+      assert old_first_name != new_first_name
+      assert new_first_name == "First_Name"
+      assert old_last_name != new_last_name
+      assert new_last_name == "Last_Name"
+    end
+
+    test "update_vendor_name/2 errors if new first name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_vendor_name(vendor2, %{first_name: "J"})
+
+      assert errors_on(changeset) == %{first_name: ["should be at least 2 character(s)"]}
+    end
+
+    test "update_vendor_name/2 errors if new last name is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_vendor_name(vendor2, %{last_name: "J"})
+
+      assert errors_on(changeset) == %{last_name: ["should be at least 2 character(s)"]}
+    end
+
+    test "update_vendor_name/2 errors if either new first or last name is bad", %{
+      vendor2: vendor2
+    } do
+      {:error, changeset} =
+        Vendors.update_vendor_name(vendor2, %{first_name: "J", last_name: "7"})
+
+      assert errors_on(changeset) == %{
+               first_name: ["should be at least 2 character(s)"],
+               last_name: ["should be at least 2 character(s)"]
+             }
+    end
+
+    test "update_permit_status/2 changes status with valid data" do
+      vendor = insert(:vendor, permit_status: "ISSUED")
+
+      %Vendor{permit_status: old_permit_status} = vendor
+
+      {:ok, %Vendor{permit_status: new_permit_status}} =
+        Vendors.update_permit_status(vendor, %{permit_status: "APPROVED"})
+
+      assert old_permit_status != new_permit_status
+      assert new_permit_status == "APPROVED"
+    end
+
+    test "update_permit_status/2 errors if incoming status is bad", %{vendor2: vendor2} do
+      {:error, changeset} = Vendors.update_permit_status(vendor2, %{permit_status: "Messed Up"})
+      assert errors_on(changeset) == %{permit_status: ["is invalid"]}
+    end
+
+    test "update_permit_id/2 works with valid permit id", %{vendor3: vendor3} do
+      %Vendor{permit_id: old_permit_id} = vendor3
+
+      {:ok, %Vendor{permit_id: new_permit_id}} =
+        Vendors.update_permit_id(vendor3, %{permit_id: "25MFF-12345"})
+
+      refute old_permit_id == new_permit_id
+      assert new_permit_id == "25MFF-12345"
+    end
+
+    test "update_permit_id/2 errors with invalid permit id value", %{vendor3: vendor3} do
+      {:error, changeset} = Vendors.update_permit_id(vendor3, %{permit_id: "abc123"})
+
+      assert errors_on(changeset) == %{
+               permit_id: ["must be in the format ##MFF-#### (e.g. 21MFF-00073)"]
+             }
+    end
+
+    test "update_permit_id/2 errors when incoming permit_id change uses a value that exists on a different vendor already",
+         %{vendor1: vendor1, vendor2: vendor2} do
+      %Vendor{permit_id: existing_permit_id} = vendor1
+
+      assert_raise Ecto.ConstraintError, fn ->
+        Vendors.update_permit_id(vendor2, %{permit_id: existing_permit_id})
       end
     end
 
-    test "returns the vendor with the given id" do
-      %{id: id} = vendor = vendor_fixture()
-      assert %Vendor{id: ^id} = Vendors.get_vendor!(vendor.id)
-    end
-  end
+    test "apply_vendor_email/3 returns updated vendor when current password and new email are valid" do
+      password = "Val1d!Password"
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt(password))
 
-  describe "register_vendor/1" do
-    test "requires email and password to be set" do
-      {:error, changeset} = Vendors.register_vendor(%{})
+      {:ok, updated_vendor} =
+        Vendors.apply_vendor_email(vendor, password, %{email: "newemail@example.com"})
 
-      assert %{
-               password: ["can't be blank"],
-               email: ["can't be blank"]
-             } = errors_on(changeset)
+      assert updated_vendor.email == "newemail@example.com"
     end
 
-    test "validates email and password when given" do
-      {:error, changeset} = Vendors.register_vendor(%{email: "not valid", password: "not valid"})
+    test "apply_vendor_email/3 returns error changeset when current password is wrong" do
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt("Correct!Pass1"))
 
-      assert %{
-               email: ["must have the @ sign and no spaces"],
-               password: ["should be at least 12 character(s)"]
-             } = errors_on(changeset)
-    end
-
-    test "validates maximum values for email and password for security" do
-      too_long = String.duplicate("db", 100)
-      {:error, changeset} = Vendors.register_vendor(%{email: too_long, password: too_long})
-      assert "should be at most 160 character(s)" in errors_on(changeset).email
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
-    end
-
-    test "validates email uniqueness" do
-      %{email: email} = vendor_fixture()
-      {:error, changeset} = Vendors.register_vendor(%{email: email})
-      assert "has already been taken" in errors_on(changeset).email
-
-      # Now try with the upper cased email too, to check that email case is ignored.
-      {:error, changeset} = Vendors.register_vendor(%{email: String.upcase(email)})
-      assert "has already been taken" in errors_on(changeset).email
-    end
-
-    test "registers vendors with a hashed password" do
-      email = unique_vendor_email()
-      {:ok, vendor} = Vendors.register_vendor(valid_vendor_attributes(email: email))
-      assert vendor.email == email
-      assert is_binary(vendor.hashed_password)
-      assert is_nil(vendor.confirmed_at)
-      assert is_nil(vendor.password)
-    end
-  end
-
-  describe "change_vendor_registration/2" do
-    test "returns a changeset" do
-      assert %Ecto.Changeset{} = changeset = Vendors.change_vendor_registration(%Vendor{})
-      assert changeset.required == [:password, :email]
-    end
-
-    test "allows fields to be set" do
-      email = unique_vendor_email()
-      password = valid_vendor_password()
-
-      changeset =
-        Vendors.change_vendor_registration(
-          %Vendor{},
-          valid_vendor_attributes(email: email, password: password)
-        )
-
-      assert changeset.valid?
-      assert get_change(changeset, :email) == email
-      assert get_change(changeset, :password) == password
-      assert is_nil(get_change(changeset, :hashed_password))
-    end
-  end
-
-  describe "change_vendor_email/2" do
-    test "returns a vendor changeset" do
-      assert %Ecto.Changeset{} = changeset = Vendors.change_vendor_email(%Vendor{})
-      assert changeset.required == [:email]
-    end
-  end
-
-  describe "apply_vendor_email/3" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "requires email to change", %{vendor: vendor} do
-      {:error, changeset} = Vendors.apply_vendor_email(vendor, valid_vendor_password(), %{})
-      assert %{email: ["did not change"]} = errors_on(changeset)
-    end
-
-    test "validates email", %{vendor: vendor} do
       {:error, changeset} =
-        Vendors.apply_vendor_email(vendor, valid_vendor_password(), %{email: "not valid"})
+        Vendors.apply_vendor_email(vendor, "WrongPassword1!", %{email: "newemail@example.com"})
+
+      assert %{current_password: ["is not valid"]} = errors_on(changeset)
+      refute changeset.valid?
+    end
+
+    test "apply_vendor_email/3 returns error changeset when new email is badly formatted, even with correct password" do
+      password = "Val1d!Password"
+      vendor = insert(:vendor, hashed_password: Bcrypt.hash_pwd_salt(password))
+
+      {:error, changeset} =
+        Vendors.apply_vendor_email(vendor, password, %{email: "not-a-valid-email"})
 
       assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
+      refute changeset.valid?
     end
 
-    test "validates maximum value for email for security", %{vendor: vendor} do
-      too_long = String.duplicate("db", 100)
-
-      {:error, changeset} =
-        Vendors.apply_vendor_email(vendor, valid_vendor_password(), %{email: too_long})
-
-      assert "should be at most 160 character(s)" in errors_on(changeset).email
+    test "valid_password/2 works correctly when password is valid", %{vendor1: vendor1} do
+      assert Vendor.valid_password?(vendor1, "Pa$$word")
     end
 
-    test "validates email uniqueness", %{vendor: vendor} do
-      %{email: email} = vendor_fixture()
-      password = valid_vendor_password()
-
-      {:error, changeset} = Vendors.apply_vendor_email(vendor, password, %{email: email})
-
-      assert "has already been taken" in errors_on(changeset).email
-    end
-
-    test "validates current password", %{vendor: vendor} do
-      {:error, changeset} =
-        Vendors.apply_vendor_email(vendor, "invalid", %{email: unique_vendor_email()})
-
-      assert %{current_password: ["is not valid"]} = errors_on(changeset)
-    end
-
-    test "applies the email without persisting it", %{vendor: vendor} do
-      email = unique_vendor_email()
-
-      {:ok, vendor} =
-        Vendors.apply_vendor_email(vendor, valid_vendor_password(), %{email: email})
-
-      assert vendor.email == email
-      assert Vendors.get_vendor!(vendor.id).email != email
-    end
-  end
-
-  describe "deliver_vendor_update_email_instructions/3" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "sends token through notification", %{vendor: vendor} do
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_update_email_instructions(vendor, "current@example.com", url)
-        end)
-
-      {:ok, token} = Base.url_decode64(token, padding: false)
-      assert vendor_token = Repo.get_by(VendorToken, token: :crypto.hash(:sha256, token))
-      assert vendor_token.vendor_id == vendor.id
-      assert vendor_token.sent_to == vendor.email
-      assert vendor_token.context == "change:current@example.com"
-    end
-  end
-
-  describe "update_vendor_email/2" do
-    setup do
-      vendor = vendor_fixture()
-      email = unique_vendor_email()
-
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_update_email_instructions(
-            %{vendor | email: email},
-            vendor.email,
-            url
-          )
-        end)
-
-      %{vendor: vendor, token: token, email: email}
-    end
-
-    test "updates the email with a valid token", %{vendor: vendor, token: token, email: email} do
-      assert Vendors.update_vendor_email(vendor, token) == :ok
-      changed_vendor = Repo.get!(Vendor, vendor.id)
-      assert changed_vendor.email != vendor.email
-      assert changed_vendor.email == email
-      assert changed_vendor.confirmed_at
-      assert changed_vendor.confirmed_at != vendor.confirmed_at
-      refute Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not update email with invalid token", %{vendor: vendor} do
-      assert Vendors.update_vendor_email(vendor, "oops") == :error
-      assert Repo.get!(Vendor, vendor.id).email == vendor.email
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not update email if vendor email changed", %{vendor: vendor, token: token} do
-      assert Vendors.update_vendor_email(%{vendor | email: "current@example.com"}, token) ==
-               :error
-
-      assert Repo.get!(Vendor, vendor.id).email == vendor.email
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not update email if token expired", %{vendor: vendor, token: token} do
-      {1, nil} = Repo.update_all(VendorToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      assert Vendors.update_vendor_email(vendor, token) == :error
-      assert Repo.get!(Vendor, vendor.id).email == vendor.email
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-  end
-
-  describe "change_vendor_password/2" do
-    test "returns a vendor changeset" do
-      assert %Ecto.Changeset{} = changeset = Vendors.change_vendor_password(%Vendor{})
-      assert changeset.required == [:password]
-    end
-
-    test "allows fields to be set" do
-      changeset =
-        Vendors.change_vendor_password(%Vendor{}, %{
-          "password" => "new valid password"
-        })
-
-      assert changeset.valid?
-      assert get_change(changeset, :password) == "new valid password"
-      assert is_nil(get_change(changeset, :hashed_password))
-    end
-  end
-
-  describe "update_vendor_password/3" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "validates password", %{vendor: vendor} do
-      {:error, changeset} =
-        Vendors.update_vendor_password(vendor, valid_vendor_password(), %{
-          password: "not valid",
-          password_confirmation: "another"
-        })
-
-      assert %{
-               password: ["should be at least 12 character(s)"],
-               password_confirmation: ["does not match password"]
-             } = errors_on(changeset)
-    end
-
-    test "validates maximum values for password for security", %{vendor: vendor} do
-      too_long = String.duplicate("db", 100)
-
-      {:error, changeset} =
-        Vendors.update_vendor_password(vendor, valid_vendor_password(), %{password: too_long})
-
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
-    end
-
-    test "validates current password", %{vendor: vendor} do
-      {:error, changeset} =
-        Vendors.update_vendor_password(vendor, "invalid", %{password: valid_vendor_password()})
-
-      assert %{current_password: ["is not valid"]} = errors_on(changeset)
-    end
-
-    test "updates the password", %{vendor: vendor} do
-      {:ok, vendor} =
-        Vendors.update_vendor_password(vendor, valid_vendor_password(), %{
-          password: "new valid password"
-        })
-
-      assert is_nil(vendor.password)
-      assert Vendors.get_vendor_by_email_and_password(vendor.email, "new valid password")
-    end
-
-    test "deletes all tokens for the given vendor", %{vendor: vendor} do
-      _ = Vendors.generate_vendor_session_token(vendor)
-
-      {:ok, _} =
-        Vendors.update_vendor_password(vendor, valid_vendor_password(), %{
-          password: "new valid password"
-        })
-
-      refute Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-  end
-
-  describe "generate_vendor_session_token/1" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "generates a token", %{vendor: vendor} do
-      token = Vendors.generate_vendor_session_token(vendor)
-      assert vendor_token = Repo.get_by(VendorToken, token: token)
-      assert vendor_token.context == "session"
-
-      # Creating the same token for another vendor should fail
-      assert_raise Ecto.ConstraintError, fn ->
-        Repo.insert!(%VendorToken{
-          token: vendor_token.token,
-          vendor_id: vendor_fixture().id,
-          context: "session"
-        })
-      end
-    end
-  end
-
-  describe "get_vendor_by_session_token/1" do
-    setup do
-      vendor = vendor_fixture()
-      token = Vendors.generate_vendor_session_token(vendor)
-      %{vendor: vendor, token: token}
-    end
-
-    test "returns vendor by token", %{vendor: vendor, token: token} do
-      assert session_vendor = Vendors.get_vendor_by_session_token(token)
-      assert session_vendor.id == vendor.id
-    end
-
-    test "does not return vendor for invalid token" do
-      refute Vendors.get_vendor_by_session_token("oops")
-    end
-
-    test "does not return vendor for expired token", %{token: token} do
-      {1, nil} = Repo.update_all(VendorToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      refute Vendors.get_vendor_by_session_token(token)
-    end
-  end
-
-  describe "delete_vendor_session_token/1" do
-    test "deletes the token" do
-      vendor = vendor_fixture()
-      token = Vendors.generate_vendor_session_token(vendor)
-      assert Vendors.delete_vendor_session_token(token) == :ok
-      refute Vendors.get_vendor_by_session_token(token)
-    end
-  end
-
-  describe "deliver_vendor_confirmation_instructions/2" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "sends token through notification", %{vendor: vendor} do
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_confirmation_instructions(vendor, url)
-        end)
-
-      {:ok, token} = Base.url_decode64(token, padding: false)
-      assert vendor_token = Repo.get_by(VendorToken, token: :crypto.hash(:sha256, token))
-      assert vendor_token.vendor_id == vendor.id
-      assert vendor_token.sent_to == vendor.email
-      assert vendor_token.context == "confirm"
-    end
-  end
-
-  describe "confirm_vendor/1" do
-    setup do
-      vendor = vendor_fixture()
-
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_confirmation_instructions(vendor, url)
-        end)
-
-      %{vendor: vendor, token: token}
-    end
-
-    test "confirms the email with a valid token", %{vendor: vendor, token: token} do
-      assert {:ok, confirmed_vendor} = Vendors.confirm_vendor(token)
-      assert confirmed_vendor.confirmed_at
-      assert confirmed_vendor.confirmed_at != vendor.confirmed_at
-      assert Repo.get!(Vendor, vendor.id).confirmed_at
-      refute Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not confirm with invalid token", %{vendor: vendor} do
-      assert Vendors.confirm_vendor("oops") == :error
-      refute Repo.get!(Vendor, vendor.id).confirmed_at
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not confirm email if token expired", %{vendor: vendor, token: token} do
-      {1, nil} = Repo.update_all(VendorToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      assert Vendors.confirm_vendor(token) == :error
-      refute Repo.get!(Vendor, vendor.id).confirmed_at
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-  end
-
-  describe "deliver_vendor_reset_password_instructions/2" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "sends token through notification", %{vendor: vendor} do
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_reset_password_instructions(vendor, url)
-        end)
-
-      {:ok, token} = Base.url_decode64(token, padding: false)
-      assert vendor_token = Repo.get_by(VendorToken, token: :crypto.hash(:sha256, token))
-      assert vendor_token.vendor_id == vendor.id
-      assert vendor_token.sent_to == vendor.email
-      assert vendor_token.context == "reset_password"
-    end
-  end
-
-  describe "get_vendor_by_reset_password_token/1" do
-    setup do
-      vendor = vendor_fixture()
-
-      token =
-        extract_vendor_token(fn url ->
-          Vendors.deliver_vendor_reset_password_instructions(vendor, url)
-        end)
-
-      %{vendor: vendor, token: token}
-    end
-
-    test "returns the vendor with valid token", %{vendor: %{id: id}, token: token} do
-      assert %Vendor{id: ^id} = Vendors.get_vendor_by_reset_password_token(token)
-      assert Repo.get_by(VendorToken, vendor_id: id)
-    end
-
-    test "does not return the vendor with invalid token", %{vendor: vendor} do
-      refute Vendors.get_vendor_by_reset_password_token("oops")
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-
-    test "does not return the vendor if token expired", %{vendor: vendor, token: token} do
-      {1, nil} = Repo.update_all(VendorToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      refute Vendors.get_vendor_by_reset_password_token(token)
-      assert Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-  end
-
-  describe "reset_vendor_password/2" do
-    setup do
-      %{vendor: vendor_fixture()}
-    end
-
-    test "validates password", %{vendor: vendor} do
-      {:error, changeset} =
-        Vendors.reset_vendor_password(vendor, %{
-          password: "not valid",
-          password_confirmation: "another"
-        })
-
-      assert %{
-               password: ["should be at least 12 character(s)"],
-               password_confirmation: ["does not match password"]
-             } = errors_on(changeset)
-    end
-
-    test "validates maximum values for password for security", %{vendor: vendor} do
-      too_long = String.duplicate("db", 100)
-      {:error, changeset} = Vendors.reset_vendor_password(vendor, %{password: too_long})
-      assert "should be at most 72 character(s)" in errors_on(changeset).password
-    end
-
-    test "updates the password", %{vendor: vendor} do
-      {:ok, updated_vendor} =
-        Vendors.reset_vendor_password(vendor, %{password: "new valid password"})
-
-      assert is_nil(updated_vendor.password)
-      assert Vendors.get_vendor_by_email_and_password(vendor.email, "new valid password")
-    end
-
-    test "deletes all tokens for the given vendor", %{vendor: vendor} do
-      _ = Vendors.generate_vendor_session_token(vendor)
-      {:ok, _} = Vendors.reset_vendor_password(vendor, %{password: "new valid password"})
-      refute Repo.get_by(VendorToken, vendor_id: vendor.id)
-    end
-  end
-
-  describe "inspect/2 for the Vendor module" do
-    test "does not include password" do
-      refute inspect(%Vendor{password: "123456"}) =~ "password: \"123456\""
+    test "valid_password/2 works for invalid password", %{vendor2: vendor2} do
+      refute Vendor.valid_password?(vendor2, "password")
     end
   end
 end

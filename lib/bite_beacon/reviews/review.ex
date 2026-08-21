@@ -2,6 +2,8 @@ defmodule BiteBeacon.Reviews.Review do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t :: %__MODULE__{}
+
   schema "reviews" do
     field :rating, :integer
     field :body, :string

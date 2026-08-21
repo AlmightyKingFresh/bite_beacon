@@ -1,4 +1,8 @@
 defmodule BiteBeacon.Users.User do
+  @moduledoc """
+  User schema and field changesets
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -6,6 +10,8 @@ defmodule BiteBeacon.Users.User do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+
+  @type t :: %__MODULE__{}
 
   schema "users" do
     field :email, :string

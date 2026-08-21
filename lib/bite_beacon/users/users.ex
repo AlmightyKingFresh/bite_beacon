@@ -1,6 +1,6 @@
 defmodule BiteBeacon.Users.Users do
   @moduledoc """
-  The Users context.
+  Users context.
   """
 
   import Ecto.Query, warn: false

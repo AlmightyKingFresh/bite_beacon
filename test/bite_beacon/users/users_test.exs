@@ -1,38 +1,39 @@
 defmodule BiteBeacon.UsersTest do
   @moduledoc """
-  Test suite for BiteBeacon.Users context.
+  Test suite for Users context.
   """
   use BiteBeacon.DataCase, async: true
 
   import BiteBeacon.Factory
 
-  alias BiteBeacon.Users.{User, Users, UserToken}
+  alias Faker.Internet
   alias BiteBeacon.Repo
+  alias BiteBeacon.Users.{User, Users}
 
   @password "Pa$$word"
 
-  describe "registration changeset/2" do
+  describe "registration_changeset/2" do
     setup do
       user = build(:user)
       %{user: user}
     end
 
-    test "valid registration changeset works", %{user: user} do
+    test "valid registration changeset works" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: @password
         })
 
       assert changeset.valid?
     end
 
-    test "too few characters in name registration changeset fails", %{user: user} do
+    test "too few characters in name registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
           name: "ai",
-          email: user.email,
+          email: Internet.email(),
           password: @password
         })
 
@@ -40,11 +41,11 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "too many characters in name registration changeset fails", %{user: user} do
+    test "too many characters in name registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
           name: "thisisaveryveryveryverylongname",
-          email: user.email,
+          email: Internet.email(),
           password: @password
         })
 
@@ -52,10 +53,10 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "malformed email registration changeset fails", %{user: user} do
+    test "malformed email registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
+          name: Internet.user_name(),
           email: "invalidemail.org",
           password: @password
         })
@@ -64,10 +65,10 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "too many characters in email registration changeset fails", %{user: user} do
+    test "too many characters in email registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
+          name: Internet.user_name(),
           email: "someridiculouslylongemailaddress@domain.com",
           password: @password
         })
@@ -76,11 +77,11 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "too few characters in password registration changeset fails", %{user: user} do
+    test "too few characters in password registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: "123"
         })
 
@@ -91,11 +92,11 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "too many characters in password registration changeset fails", %{user: user} do
+    test "too many characters in password registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: "thisisaverylongpasswordthatexceedsthemaximumlength"
         })
 
@@ -106,11 +107,11 @@ defmodule BiteBeacon.UsersTest do
       refute changeset.valid?
     end
 
-    test "password missing lowercase character registration changeset fails", %{user: user} do
+    test "password missing lowercase character registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: "PASSWORD1!"
         })
 
@@ -118,11 +119,11 @@ defmodule BiteBeacon.UsersTest do
       assert %{password: ["at least one lower case character"]} = errors_on(changeset)
     end
 
-    test "password missing uppercase character registration changeset fails", %{user: user} do
+    test "password missing uppercase character registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: "password1!"
         })
 
@@ -130,13 +131,11 @@ defmodule BiteBeacon.UsersTest do
       assert %{password: ["at least one upper case character"]} = errors_on(changeset)
     end
 
-    test "password missing digit or punctuation character registration changeset fails", %{
-      user: user
-    } do
+    test "password missing digit or punctuation character registration changeset fails" do
       changeset =
         User.registration_changeset(%User{}, %{
-          name: user.name,
-          email: user.email,
+          name: Internet.user_name(),
+          email: Internet.email(),
           password: "Password"
         })
 
@@ -152,8 +151,8 @@ defmodule BiteBeacon.UsersTest do
     test "hashes the password" do
       changeset =
         User.registration_changeset(%User{}, %{
-          email: "test@example.com",
-          name: "testuser",
+          email: Internet.email(),
+          name: Internet.user_name(),
           password: "Pa$$word123!"
         })
 
@@ -164,38 +163,30 @@ defmodule BiteBeacon.UsersTest do
     end
   end
 
-  describe "user update changesets" do
-    setup do
-      user = insert(:user)
-      %{user: user}
-    end
-
-    test "valid name update changeset works", %{user: user} do
+  describe "user update changeset functions" do
+    test "valid name given to name_changeset/3 works" do
       changeset =
-        User.name_changeset(user, %{
-          name: "NewName",
-          email: user.email
+        User.name_changeset(%User{}, %{
+          name: "NewName"
         })
 
       assert changeset.valid?
       assert get_change(changeset, :name) == "NewName"
     end
 
-    test "invalid name update changeset fails", %{user: user} do
+    test "invalid name given to name_changeset/3 fails" do
       changeset =
-        User.name_changeset(user, %{
-          name: "a",
-          email: user.email
+        User.name_changeset(%User{}, %{
+          name: "a"
         })
 
       refute changeset.valid?
       assert %{name: ["must be between 4 and 30 characters"]} = errors_on(changeset)
     end
 
-    test "valid email update changeset works", %{user: user} do
+    test "valid email given to email_changeset/3 given to  works" do
       changeset =
-        User.email_changeset(user, %{
-          name: user.name,
+        User.email_changeset(%User{}, %{
           email: "cornholio@example.com"
         })
 
@@ -203,10 +194,9 @@ defmodule BiteBeacon.UsersTest do
       assert get_change(changeset, :email) == "cornholio@example.com"
     end
 
-    test "invalid email update changeset fails", %{user: user} do
+    test "invalid email given to email_changeset/3 fails" do
       changeset =
-        User.email_changeset(user, %{
-          name: user.name,
+        User.email_changeset(%User{}, %{
           email: "invalidemail.edu"
         })
 
@@ -214,11 +204,9 @@ defmodule BiteBeacon.UsersTest do
       assert %{email: ["must have the @ sign and no spaces"]} = errors_on(changeset)
     end
 
-    test "valid password update changeset works", %{user: user} do
+    test "valid password given to password_changeset/3 works" do
       changeset =
-        User.password_changeset(user, %{
-          name: user.name,
-          email: user.email,
+        User.password_changeset(%User{}, %{
           password: "NewPa$$word123!"
         })
 
@@ -227,11 +215,9 @@ defmodule BiteBeacon.UsersTest do
       refute get_change(changeset, :password)
     end
 
-    test "invalid password update changeset fails", %{user: user} do
+    test "invalid password given to password_changeset fails" do
       changeset =
-        User.password_changeset(user, %{
-          name: user.name,
-          email: user.email,
+        User.password_changeset(%User{}, %{
           password: "short"
         })
 
