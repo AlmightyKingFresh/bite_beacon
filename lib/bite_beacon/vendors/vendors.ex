@@ -7,6 +7,7 @@ defmodule BiteBeacon.Vendors.Vendors do
   alias BiteBeacon.Repo
   alias BiteBeacon.Vendors.Vendor
 
+  @spec list_vendors() :: [Vendor.t()]
   def list_vendors do
     Repo.all(Vendor)
   end
@@ -19,6 +20,7 @@ defmodule BiteBeacon.Vendors.Vendors do
     Repo.get_by(Vendor, email: email)
   end
 
+  @spec register_vendor(map()) :: {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def register_vendor(attrs) do
     %Vendor{}
     |> Vendor.registration_changeset(attrs)
@@ -30,33 +32,42 @@ defmodule BiteBeacon.Vendors.Vendors do
   #   Vendor.registration_changeset(vendor, attrs, hash_password: false, validate_email: false)
   # end
 
+  @spec update_vendor_email(Vendor.t(), map()) :: {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def update_vendor_email(vendor, attrs \\ %{}) do
     Vendor.email_changeset(vendor, attrs)
     |> Repo.update()
   end
 
+  @spec update_vendor_password(Vendor.t(), map()) ::
+          {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def update_vendor_password(vendor, attrs \\ %{}) do
     Vendor.password_changeset(vendor, attrs)
     |> Repo.update()
   end
 
+  @spec update_vendor_name(Vendor.t(), map()) :: {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def update_vendor_name(vendor, attrs) do
     Vendor.name_changeset(vendor, attrs)
     |> Repo.update()
   end
 
+  @spec update_permit_status(Vendor.t(), map()) ::
+          {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def update_permit_status(vendor, attrs) do
     vendor
     |> Vendor.permit_status_changeset(attrs)
     |> Repo.update()
   end
 
+  @spec update_permit_id(Vendor.t(), map()) :: {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def update_permit_id(vendor, attrs) do
     vendor
     |> Vendor.permit_id_changeset(attrs)
     |> Repo.update()
   end
 
+  @spec apply_vendor_email(Vendor.t(), String.t(), map()) ::
+          {:ok, Vendor.t()} | {:error, Ecto.Changeset.t()}
   def apply_vendor_email(vendor, password, attrs) do
     vendor
     |> Vendor.email_changeset(attrs)
@@ -76,19 +87,6 @@ defmodule BiteBeacon.Vendors.Vendors do
   #   Repo.insert!(vendor_token)
   #   VendorNotifier.deliver_update_email_instructions(vendor, update_email_url_fun.(encoded_token))
   # end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for changing the vendor password.
-
-  ## Examples
-
-      iex> update_vendor_password(vendor, "valid password", %{password: ...})
-      {:ok, %Vendor{}}
-
-      iex> update_vendor_password(vendor, "invalid password", %{password: ...})
-      {:error, %Ecto.Changeset{}}
-
-  """
 
   # def update_vendor_password(vendor, password, attrs) do
   #   changeset =
@@ -190,16 +188,6 @@ defmodule BiteBeacon.Vendors.Vendors do
   # end
 
   ## Reset password
-
-  @doc ~S"""
-  Delivers the reset password email to the given vendor.
-
-  ## Examples
-
-      iex> deliver_vendor_reset_password_instructions(vendor, &url(~p"/vendors/reset_password/#{&1}"))
-      {:ok, %{to: ..., body: ...}}
-
-  """
 
   # def deliver_vendor_reset_password_instructions(%Vendor{} = vendor, reset_password_url_fun)
   #     when is_function(reset_password_url_fun, 1) do

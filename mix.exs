@@ -63,7 +63,8 @@ defmodule BiteBeacon.MixProject do
       {:nimble_csv, "~> 1.2"},
       {:timex, "~> 3.7"},
       {:ex_machina, "~> 2.8"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4"}
     ]
   end
 
