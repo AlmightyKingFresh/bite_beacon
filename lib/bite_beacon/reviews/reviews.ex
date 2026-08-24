@@ -13,6 +13,7 @@ defmodule BiteBeacon.Reviews.Reviews do
   Creates a review.
   """
 
+  @spec create_review(map()) :: {:ok, Review.t()} | {:error, Ecto.Changeset.t()}
   def create_review(attrs \\ %{}) do
     %Review{}
     |> Review.review_changeset(attrs)
@@ -23,7 +24,7 @@ defmodule BiteBeacon.Reviews.Reviews do
   Gets a single review.
   """
 
-  @spec get_review!(UUID.t()) :: Review.t()
+  @spec get_review!(integer()) :: Review.t()
   def get_review!(id), do: Repo.get!(Review, id)
 
   @doc """
@@ -48,6 +49,7 @@ defmodule BiteBeacon.Reviews.Reviews do
   Updates a review.
   """
 
+  @spec update_review(Review.t(), map()) :: {:ok, Review.t()} | {:error, Ecto.Changeset.t()}
   def update_review(%Review{} = review, attrs) do
     review
     |> Review.review_changeset(attrs)
@@ -58,6 +60,7 @@ defmodule BiteBeacon.Reviews.Reviews do
   Deletes a review.
   """
 
+  @spec delete_review(Review.t()) :: {:ok, Review.t()} | {:error, Ecto.Changeset.t()}
   def delete_review(%Review{} = review) do
     Repo.delete(review)
   end

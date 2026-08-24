@@ -12,6 +12,7 @@ defmodule BiteBeacon.Users.Users do
   Returns all users.
   """
 
+  @spec list_users() :: [User.t()]
   def list_users do
     Repo.all(User)
   end
@@ -20,12 +21,14 @@ defmodule BiteBeacon.Users.Users do
   Gets a single user.
   """
 
+  @spec get_user(Ecto.UUID.t()) :: User.t() | nil
   def get_user(id), do: Repo.get(User, id)
 
   @doc """
   Fetches a user by email.
   """
 
+  @spec get_user_by_email(String.t()) :: User.t() | nil
   def get_user_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
   end
@@ -33,6 +36,7 @@ defmodule BiteBeacon.Users.Users do
   @doc """
   Fetches a user by name.
   """
+  @spec get_user_by_name(String.t()) :: User.t() | nil
   def get_user_by_name(name) when is_binary(name) do
     Repo.get_by(User, name: name)
   end
@@ -43,6 +47,7 @@ defmodule BiteBeacon.Users.Users do
   Registers a user.
   """
 
+  @spec register_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def register_user(attrs) do
     %User{}
     |> User.registration_changeset(attrs)
@@ -53,6 +58,7 @@ defmodule BiteBeacon.Users.Users do
   Updates a user's username
   """
 
+  @spec update_user_name(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user_name(%User{} = user, attrs \\ %{}) do
     User.name_changeset(user, attrs)
     |> Repo.update()
@@ -64,6 +70,7 @@ defmodule BiteBeacon.Users.Users do
   updates a user's email address
 
   """
+  @spec update_user_email(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user_email(%User{} = user, attrs \\ %{}) do
     User.email_changeset(user, attrs)
     |> Repo.update()
@@ -74,6 +81,7 @@ defmodule BiteBeacon.Users.Users do
 
   """
 
+  @spec update_user_password(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user_password(%User{} = user, attrs \\ %{}) do
     User.password_changeset(user, attrs)
     |> Repo.update()
