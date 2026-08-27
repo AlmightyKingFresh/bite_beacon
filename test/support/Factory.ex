@@ -74,9 +74,7 @@ defmodule BiteBeacon.Factory do
       block: block,
       lot: lot,
       block_lot: block <> lot,
-      cuisine:
-        Faker.Food.dish() <>
-          ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish(),
+      cuisine: generate_cuisine(),
       x: Float.round(:rand.uniform() * 10_000_000, 3),
       y: Float.round(:rand.uniform() * 10_000_000, 3),
       latitude: latitude,
@@ -120,5 +118,10 @@ defmodule BiteBeacon.Factory do
       |> String.pad_leading(4, "0")
 
     "#{year}MFF-#{number}"
+  end
+
+  def generate_cuisine() do
+    Faker.Food.dish() <>
+      ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish()
   end
 end

@@ -65,15 +65,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Updates a facility.
-
-  ## Examples
-
-      iex> update_facility(facility, %{field: new_value})
-      {:ok, %Facility{}}
-
-      iex> update_facility(facility, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   @spec update_facility(Facility.t(), map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
   def update_facility(%Facility{} = facility, attrs) do
@@ -84,15 +75,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Deletes a facility.
-
-  ## Examples
-
-      iex> delete_facility(facility)
-      {:ok, %Facility{}}
-
-      iex> delete_facility(facility)
-      {:error, %Ecto.Changeset{}}
-
   """
   @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
   def delete_facility(%Facility{} = facility) do
@@ -101,12 +83,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking facility changes.
-
-  ## Examples
-
-      iex> change_facility(facility)
-      %Ecto.Changeset{data: %Facility{}}
-
   """
   @spec change_facility(Facility.t(), map()) :: Ecto.Changeset.t()
   def change_facility(%Facility{} = facility, attrs \\ %{}) do
