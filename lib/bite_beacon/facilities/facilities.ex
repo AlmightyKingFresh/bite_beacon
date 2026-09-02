@@ -24,20 +24,9 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Gets a single facility.
-
-  Raises `Ecto.NoResultsError` if the Facility does not exist.
-
-  ## Examples
-
-      iex> get_facility!(123)
-      %Facility{}
-
-      iex> get_facility!(456)
-      ** (Ecto.NoResultsError)
-
   """
-  @spec get_facility!(integer()) :: Facility.t()
-  def get_facility!(id), do: Repo.get!(Facility, id)
+  @spec get_facility(integer()) :: Facility.t() | nil
+  def get_facility(id), do: Repo.get(Facility, id)
 
   @doc """
   gets all facilities by vendor_id
@@ -56,8 +45,8 @@ defmodule BiteBeacon.Facilities.Facilities do
     Repo.all(from f in Facility, where: f.name == ^name)
   end
 
-  @spec create_facility(map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
-  def create_facility(attrs \\ %{}) do
+  @spec insert_facility(map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
+  def insert_facility(attrs) do
     %Facility{}
     |> Facility.registration_changeset(attrs)
     |> Repo.insert()
@@ -79,13 +68,5 @@ defmodule BiteBeacon.Facilities.Facilities do
   @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
   def delete_facility(%Facility{} = facility) do
     Repo.delete(facility)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking facility changes.
-  """
-  @spec change_facility(Facility.t(), map()) :: Ecto.Changeset.t()
-  def change_facility(%Facility{} = facility, attrs \\ %{}) do
-    Facility.registration_changeset(facility, attrs)
   end
 end
