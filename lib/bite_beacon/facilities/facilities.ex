@@ -24,20 +24,9 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Gets a single facility.
-
-  Raises `Ecto.NoResultsError` if the Facility does not exist.
-
-  ## Examples
-
-      iex> get_facility!(123)
-      %Facility{}
-
-      iex> get_facility!(456)
-      ** (Ecto.NoResultsError)
-
   """
-  @spec get_facility!(integer()) :: Facility.t()
-  def get_facility!(id), do: Repo.get!(Facility, id)
+  @spec get_facility(integer()) :: Facility.t() | nil
+  def get_facility(id), do: Repo.get(Facility, id)
 
   @doc """
   gets all facilities by vendor_id
@@ -56,8 +45,8 @@ defmodule BiteBeacon.Facilities.Facilities do
     Repo.all(from f in Facility, where: f.name == ^name)
   end
 
-  @spec create_facility(map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
-  def create_facility(attrs \\ %{}) do
+  @spec insert_facility(map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
+  def insert_facility(attrs) do
     %Facility{}
     |> Facility.registration_changeset(attrs)
     |> Repo.insert()
@@ -65,15 +54,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Updates a facility.
-
-  ## Examples
-
-      iex> update_facility(facility, %{field: new_value})
-      {:ok, %Facility{}}
-
-      iex> update_facility(facility, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   @spec update_facility(Facility.t(), map()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
   def update_facility(%Facility{} = facility, attrs) do
@@ -84,32 +64,12 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Deletes a facility.
-
-  ## Examples
-
-      iex> delete_facility(facility)
-      {:ok, %Facility{}}
-
-      iex> delete_facility(facility)
-      {:error, %Ecto.Changeset{}}
-
   """
-  @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
+  @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, :facility_not_found}
   def delete_facility(%Facility{} = facility) do
     Repo.delete(facility)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking facility changes.
-
-  ## Examples
-
-      iex> change_facility(facility)
-      %Ecto.Changeset{data: %Facility{}}
-
-  """
-  @spec change_facility(Facility.t(), map()) :: Ecto.Changeset.t()
-  def change_facility(%Facility{} = facility, attrs \\ %{}) do
-    Facility.registration_changeset(facility, attrs)
+  rescue
+    Ecto.StaleEntryError ->
+      {:error, :facility_not_found}
   end
 end

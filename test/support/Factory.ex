@@ -74,9 +74,7 @@ defmodule BiteBeacon.Factory do
       block: block,
       lot: lot,
       block_lot: block <> lot,
-      cuisine:
-        Faker.Food.dish() <>
-          ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish(),
+      cuisine: generate_cuisine(),
       x: Float.round(:rand.uniform() * 10_000_000, 3),
       y: Float.round(:rand.uniform() * 10_000_000, 3),
       latitude: latitude,
@@ -88,7 +86,8 @@ defmodule BiteBeacon.Factory do
       police_districts: Enum.random(1..10),
       supervisor_districts: Enum.random(1..11),
       zip_codes: Enum.random(1..65),
-      neighborhoods: Enum.random(1..93)
+      neighborhoods: Enum.random(1..93),
+      id: generate_facility_id()
     }
   end
 
@@ -120,5 +119,14 @@ defmodule BiteBeacon.Factory do
       |> String.pad_leading(4, "0")
 
     "#{year}MFF-#{number}"
+  end
+
+  def generate_cuisine() do
+    Faker.Food.dish() <>
+      ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish() <> ", " <> Faker.Food.dish()
+  end
+
+  def generate_facility_id() do
+    1_000_000 + rem(System.unique_integer([:positive]) * 7919, 1_000_000)
   end
 end

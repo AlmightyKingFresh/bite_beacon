@@ -62,7 +62,7 @@ defmodule BiteBeacon.Facilities.Facility do
       :name
     ])
     |> validate_length(:cuisine, max: 500)
-    |> validate_required([:vendor_id, :id, :name])
+    |> validate_required([:vendor_id, :name, :id])
     |> foreign_key_constraint(:vendor_id)
     |> validate_type()
   end
