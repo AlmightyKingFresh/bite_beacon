@@ -65,8 +65,11 @@ defmodule BiteBeacon.Facilities.Facilities do
   @doc """
   Deletes a facility.
   """
-  @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, Ecto.Changeset.t()}
+  @spec delete_facility(Facility.t()) :: {:ok, Facility.t()} | {:error, :facility_not_found}
   def delete_facility(%Facility{} = facility) do
     Repo.delete(facility)
+  rescue
+    Ecto.StaleEntryError ->
+      {:error, :facility_not_found}
   end
 end

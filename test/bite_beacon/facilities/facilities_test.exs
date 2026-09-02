@@ -76,6 +76,38 @@ defmodule BiteBeacon.FaciltiesTest do
 
       assert errors_on(changeset) == %{type: ["is invalid"]}
     end
+
+    test "cuisine at max length (500) passes registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 500)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine
+        })
+
+      assert changeset.valid?
+    end
+
+    test "cuisine over max length (501) fails registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 501)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine
+        })
+
+      refute changeset.valid?
+    end
   end
 
   describe "Facilities CRUD" do
@@ -162,10 +194,51 @@ defmodule BiteBeacon.FaciltiesTest do
           id: facility_id
         })
 
-      assert facility.vendor_id == vendor_id
-      assert facility.name == "Dana's Truck"
-      assert facility.type == "Truck"
-      assert facility.id == facility_id
+      assert Map.get(facility, :vendor_id) == vendor_id
+      assert Map.get(facility, :name) == "Dana's Truck"
+      assert Map.get(facility, :type) == "Truck"
+      assert Map.get(facility, :id) == facility_id
+    end
+
+    test "update_facility/2 updates given facility only where changes are provided", %{
+      facility1: facility1
+    } do
+      {:ok, facility} = Facilities.update_facility(facility1, %{name: "Updated Facility"})
+      assert Map.get(facility, :name) == "Updated Facility"
+      assert Map.get(facility, :type) == facility1.type
+      assert Map.get(facility, :id) == facility1.id
+    end
+
+    test "update_facility/2 returns error when updating with invalid data", %{
+      facility1: facility1
+    } do
+      {:error, changeset} = Facilities.update_facility(facility1, %{name: ""})
+      assert errors_on(changeset) == %{name: ["can't be blank"]}
+    end
+
+    test "update_facility/2 fails with non-existent vendor", %{
+      facility1: facility1
+    } do
+      {:error, changeset} =
+        Facilities.update_facility(facility1, %{vendor_id: Ecto.UUID.generate()})
+
+      assert errors_on(changeset) == %{vendor_id: ["does not exist"]}
+    end
+
+    test "delete_facility/1 deletes given facility leaves others untouched", %{
+      facility1: facility1,
+      facility2: facility2
+    } do
+      {:ok, deleted_facility} = Facilities.delete_facility(facility1)
+      assert Map.get(deleted_facility, :id) == Map.get(facility1, :id)
+      assert Repo.get(Facility, facility1.id) == nil
+      assert Repo.get(Facility, facility2.id) != nil
+    end
+
+    test "delete_facility/1 returns error for non-existent facility" do
+      facility = build(:facility)
+
+      assert Facilities.delete_facility(facility) == {:error, :facility_not_found}
     end
   end
 end
