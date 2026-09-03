@@ -24,8 +24,8 @@ defmodule BiteBeacon.Reviews.Reviews do
   Gets a single review.
   """
 
-  @spec get_review!(integer()) :: Review.t()
-  def get_review!(id), do: Repo.get!(Review, id)
+  @spec get_review(integer()) :: Review.t() | nil
+  def get_review(id), do: Repo.get(Review, id)
 
   @doc """
   gets all reviews for a given facility
@@ -49,19 +49,25 @@ defmodule BiteBeacon.Reviews.Reviews do
   Updates a review.
   """
 
-  @spec update_review(Review.t(), map()) :: {:ok, Review.t()} | {:error, Ecto.Changeset.t()}
+  @spec update_review(Review.t(), map()) ::
+          {:ok, Review.t()} | {:error, Ecto.Changeset.t() | :nonexistent_review}
   def update_review(%Review{} = review, attrs) do
     review
     |> Review.review_changeset(attrs)
     |> Repo.update()
+  rescue
+    Ecto.StaleEntryError -> {:error, :nonexistent_review}
   end
 
   @doc """
   Deletes a review.
   """
 
-  @spec delete_review(Review.t()) :: {:ok, Review.t()} | {:error, Ecto.Changeset.t()}
+  @spec delete_review(Review.t()) :: {:ok, Review.t()} | {:error, :review_not_found}
   def delete_review(%Review{} = review) do
     Repo.delete(review)
+  rescue
+    Ecto.StaleEntryError ->
+      {:error, :review_not_found}
   end
 end

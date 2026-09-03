@@ -25,7 +25,7 @@ defmodule BiteBeacon.Reviews.Review do
 
   defp validate_body_length(changeset) do
     changeset
-    |> validate_length(:body, max: 285)
+    |> validate_length(:body, max: 285, min: 3)
   end
 
   defp validate_rating(changeset) do

@@ -77,9 +77,9 @@ defmodule BiteBeacon.FaciltiesTest do
       assert errors_on(changeset) == %{type: ["is invalid"]}
     end
 
-    test "cuisine at max length (500) passes registration_changeset/1" do
+    test "cuisine at max length (285) passes registration_changeset/1" do
       %{id: vendor_id} = insert(:vendor)
-      cuisine = String.duplicate("a", 500)
+      cuisine = String.duplicate("a", 285)
 
       changeset =
         Facility.registration_changeset(%Facility{}, %{
@@ -93,9 +93,9 @@ defmodule BiteBeacon.FaciltiesTest do
       assert changeset.valid?
     end
 
-    test "cuisine over max length (501) fails registration_changeset/1" do
+    test "cuisine over max length (286) fails registration_changeset/1" do
       %{id: vendor_id} = insert(:vendor)
-      cuisine = String.duplicate("a", 501)
+      cuisine = String.duplicate("a", 286)
 
       changeset =
         Facility.registration_changeset(%Facility{}, %{
