@@ -1,4 +1,4 @@
-defmodule BiteBeacon.FaciltiesTest do
+defmodule BiteBeacon.FacilitiesTest do
   @moduledoc """
   Test suite for Facilities context
   """
@@ -8,11 +8,12 @@ defmodule BiteBeacon.FaciltiesTest do
   import BiteBeacon.Factory
 
   alias BiteBeacon.Facilities.{Facilities, Facility}
+  alias Faker.Address
   alias BiteBeacon.Repo
   alias BiteBeacon.Vendors.Vendor
 
   describe "Facility changeset functions" do
-    test "valid registration given to registration_changest/1 works properly " do
+    test "valid registration given to registration_changeset/1 works properly" do
       %{id: vendor_id} = insert(:vendor)
 
       changeset =
@@ -20,7 +21,9 @@ defmodule BiteBeacon.FaciltiesTest do
           vendor_id: vendor_id,
           name: "Dana's Truck",
           type: "Truck",
-          id: generate_facility_id()
+          id: generate_facility_id(),
+          latitude: Address.latitude(),
+          longitude: Address.longitude()
         })
 
       assert changeset.valid?
@@ -108,6 +111,78 @@ defmodule BiteBeacon.FaciltiesTest do
 
       refute changeset.valid?
     end
+
+    test "longitude above ceiling fails registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 55)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine,
+          latitude: Address.latitude(),
+          longitude: 223_344
+        })
+
+      assert errors_on(changeset) == %{longitude: ["must be less than 180"]}
+    end
+
+    test "longitude below floor fails registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 55)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine,
+          latitude: Address.latitude(),
+          longitude: -223_344
+        })
+
+      assert errors_on(changeset) == %{longitude: ["must be greater than or equal to -180"]}
+    end
+
+    test "latitude above ceiling fails registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 55)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine,
+          latitude: 2468,
+          longitude: Address.longitude()
+        })
+
+      assert errors_on(changeset) == %{latitude: ["must be less than 90"]}
+    end
+
+    test "latitude below floor fails registration_changeset/1" do
+      %{id: vendor_id} = insert(:vendor)
+      cuisine = String.duplicate("a", 55)
+
+      changeset =
+        Facility.registration_changeset(%Facility{}, %{
+          vendor_id: vendor_id,
+          name: "Dana's Truck",
+          type: "Truck",
+          id: generate_facility_id(),
+          cuisine: cuisine,
+          latitude: -2468,
+          longitude: Address.longitude()
+        })
+
+      assert errors_on(changeset) == %{latitude: ["must be greater than or equal to -90"]}
+    end
   end
 
   describe "Facilities CRUD" do
@@ -123,14 +198,14 @@ defmodule BiteBeacon.FaciltiesTest do
         vendor2: vendor2,
         facility1: facility1,
         facility2: facility2,
-        faciltiy3: facility3
+        facility3: facility3
       }
     end
 
-    test "list_facilites/0 returns all facilties", %{
+    test "list_facilities/0 returns all facilities", %{
       facility1: facility1,
       facility2: facility2,
-      faciltiy3: facility3
+      facility3: facility3
     } do
       facilities = Facilities.list_facilities()
       assert facility1 in facilities
@@ -138,7 +213,7 @@ defmodule BiteBeacon.FaciltiesTest do
       assert facility3 in facilities
     end
 
-    test " list_facilities/0 returns nothing if table is empty" do
+    test "list_facilities/0 returns nothing if table is empty" do
       Repo.delete_all(Facility)
       assert Facilities.list_facilities() == []
     end
@@ -152,10 +227,10 @@ defmodule BiteBeacon.FaciltiesTest do
       assert Facilities.get_facility(1_234_567) == nil
     end
 
-    test "list_facilites_by_vendor/1 returns all facilites with given vendor_id", %{
+    test "list_facilities_by_vendor/1 returns all facilities with given vendor_id", %{
       vendor1: vendor1,
       facility1: facility1,
-      faciltiy3: facility3
+      facility3: facility3
     } do
       %{id: vendor_id} = vendor1
       facilities = Facilities.list_facilities_by_vendor_id(vendor_id)
@@ -164,7 +239,7 @@ defmodule BiteBeacon.FaciltiesTest do
       assert facility3 in facilities
     end
 
-    test "list_facilites_by_vendor/1 returns empty list if no facilties exist in table with corresponding vendor_id",
+    test "list_facilities_by_vendor/1 returns empty list if no facilities exist in table with corresponding vendor_id",
          %{vendor1: vendor1} do
       Repo.delete_all(Facility)
       %{id: vendor_id} = vendor1
@@ -194,19 +269,19 @@ defmodule BiteBeacon.FaciltiesTest do
           id: facility_id
         })
 
-      assert Map.get(facility, :vendor_id) == vendor_id
-      assert Map.get(facility, :name) == "Dana's Truck"
-      assert Map.get(facility, :type) == "Truck"
-      assert Map.get(facility, :id) == facility_id
+      assert facility.vendor_id == vendor_id
+      assert facility.name == "Dana's Truck"
+      assert facility.type == "Truck"
+      assert facility.id == facility_id
     end
 
     test "update_facility/2 updates given facility only where changes are provided", %{
       facility1: facility1
     } do
       {:ok, facility} = Facilities.update_facility(facility1, %{name: "Updated Facility"})
-      assert Map.get(facility, :name) == "Updated Facility"
-      assert Map.get(facility, :type) == facility1.type
-      assert Map.get(facility, :id) == facility1.id
+      assert facility.name == "Updated Facility"
+      assert facility.type == facility1.type
+      assert facility.id == facility1.id
     end
 
     test "update_facility/2 returns error when updating with invalid data", %{
@@ -230,7 +305,7 @@ defmodule BiteBeacon.FaciltiesTest do
       facility2: facility2
     } do
       {:ok, deleted_facility} = Facilities.delete_facility(facility1)
-      assert Map.get(deleted_facility, :id) == Map.get(facility1, :id)
+      assert deleted_facility.id == facility1.id
       assert Repo.get(Facility, facility1.id) == nil
       assert Repo.get(Facility, facility2.id) != nil
     end
