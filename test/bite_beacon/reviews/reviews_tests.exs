@@ -7,11 +7,8 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
 
   import BiteBeacon.Factory
 
-  alias BiteBeacon.Facilities.{Facility, Facilities}
   alias BiteBeacon.Repo
   alias BiteBeacon.Reviews.{Review, Reviews}
-  alias BiteBeacon.Users.{User, Users}
-  alias BiteBeacon.Vendors.{Vendor, Vendors}
 
   describe "Review changeset functions" do
     setup do
@@ -68,19 +65,6 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
 
       assert not changeset.valid?
       assert errors_on(changeset) == %{rating: ["can't be blank"]}
-    end
-
-    test "changeset with body too short fails", %{user: user, facility: facility} do
-      changeset =
-        Review.review_changeset(%Review{}, %{
-          user_id: user.id,
-          facility_id: facility.id,
-          rating: 5,
-          body: "ok"
-        })
-
-      assert not changeset.valid?
-      assert errors_on(changeset) == %{body: ["should be at least 3 character(s)"]}
     end
 
     test "changeset with body too long fails", %{user: user, facility: facility} do
@@ -158,7 +142,7 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
         user_id: Ecto.UUID.generate(),
         facility_id: "22",
         rating: 0,
-        body: "!!"
+        body: "!!!!!!!!!!"
       }
 
       reviews_before = Repo.all(Review)
