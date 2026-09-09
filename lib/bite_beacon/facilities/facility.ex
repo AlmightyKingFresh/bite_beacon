@@ -65,10 +65,22 @@ defmodule BiteBeacon.Facilities.Facility do
     |> validate_required([:vendor_id, :name, :id])
     |> foreign_key_constraint(:vendor_id)
     |> validate_type()
+    |> validate_longitude()
+    |> validate_latitude()
   end
 
   defp validate_type(changeset) do
     changeset
     |> validate_inclusion(:type, ["Truck", "Push Cart"])
+  end
+
+  defp validate_longitude(changeset) do
+    changeset
+    |> validate_number(:longitude, greater_than_or_equal_to: -180, less_than: 180)
+  end
+
+  defp validate_latitude(changeset) do
+    changeset
+    |> validate_number(:latitude, greater_than_or_equal_to: -90, less_than: 90)
   end
 end

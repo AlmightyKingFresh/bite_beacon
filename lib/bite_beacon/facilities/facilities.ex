@@ -10,12 +10,6 @@ defmodule BiteBeacon.Facilities.Facilities do
 
   @doc """
   Returns the list of facilities.
-
-  ## Examples
-
-      iex> list_facilities()
-      [%Facility{}, ...]
-
   """
   @spec list_facilities() :: [Facility.t()]
   def list_facilities do

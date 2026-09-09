@@ -80,9 +80,7 @@ defmodule Fixtures do
           name: map["name"],
           # formatted to utc for db insertion
           permit_approval_date: to_utc(map["permit_approval_date"], :long),
-          # formatted to utc for db insertion
           permit_application_received: to_utc(map["permit_application_received"], :short),
-          # formatted to utc for db insertion
           permit_expiration_date: to_utc(map["permit_expiration_date"], :long),
           date_notice_of_intent_sent: nil,
           prior_permit: String.to_integer(map["prior_permit"]),
@@ -174,7 +172,7 @@ defmodule Fixtures do
       end)
 
     case Repo.transaction(multi) do
-      {:ok, result} -> {:ok, "All #{Enum.count(result)} facilites dumped successfully"}
+      {:ok, result} -> {:ok, "All #{Enum.count(result)} facilities dumped successfully"}
       {:error, _operation, reason, _changes} -> {:error, reason}
     end
   end
