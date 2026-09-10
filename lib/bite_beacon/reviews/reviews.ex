@@ -70,4 +70,22 @@ defmodule BiteBeacon.Reviews.Reviews do
     Ecto.StaleEntryError ->
       {:error, :review_not_found}
   end
+
+  @spec get_rating_average_for_facility(integer()) :: float() | nil
+  def get_rating_average_for_facility(facility_id) do
+    query =
+      from r in Review,
+        where: r.facility_id == ^facility_id,
+        select: avg(r.rating)
+
+    Repo.one(query)
+    |> case do
+      nil ->
+        nil
+
+      avg ->
+        Decimal.round(avg, 2)
+        |> Decimal.to_float()
+    end
+  end
 end
