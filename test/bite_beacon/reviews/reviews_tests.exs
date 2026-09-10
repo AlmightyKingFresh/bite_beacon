@@ -315,5 +315,26 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
                  rating: 2
                })
     end
+
+    test "get_rating_average_for_facility/1 returns the average rating for a given facility", %{
+      user: user,
+      facility: facility
+    } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+      insert(:review, user_id: user.id, facility_id: facility.id, rating: 4)
+      insert(:review, user_id: user2.id, facility_id: facility.id, rating: 3)
+      insert(:review, user_id: user3.id, facility_id: facility.id, rating: 4)
+
+      average_rating = Reviews.get_rating_average_for_facility(facility.id)
+      assert average_rating == 3.67
+    end
+
+    test "get_rating_average_for_facility/1 returns nil if no reviews exist for the facility", %{
+      facility: facility
+    } do
+      average_rating = Reviews.get_rating_average_for_facility(facility.id)
+      assert average_rating == nil
+    end
   end
 end
