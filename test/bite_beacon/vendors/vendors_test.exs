@@ -564,9 +564,38 @@ defmodule BiteBeacon.VendorsTest do
       {:error, {:unexpected_status, 404}} =
         Vendors.check_permit_status(vendor, plug: {Req.Test, VendorPermitStatusStub})
     end
+
+    test "check_permit_status/2 returns error tuple on transport failure" do
+      vendor = insert(:vendor)
+
+      Req.Test.stub(VendorPermitStatusTransportErrorStub, fn conn ->
+        Req.Test.transport_error(conn, :timeout)
+      end)
+
+      result =
+        Vendors.check_permit_status(vendor,
+          plug: {Req.Test, VendorPermitStatusTransportErrorStub}
+        )
+
+      assert {:error, _reason} = result
+    end
   end
 
   describe "parse_permit_status_response/1" do
-    # tests that just call the pure function directly with plain maps — no HTTP involved at all
+    test "parses a full response into atom-keyed attrs with real DateTimes" do
+      response = %{
+        "permit_status" => "APPROVED",
+        "permit_approval_date" => "2024-01-15",
+        "permit_expiration_date" => "2025-01-15",
+        "date_notice_of_intent_sent" => nil
+      }
+
+      assert Vendors.parse_permit_status_response(response) == %{
+               permit_status: "APPROVED",
+               permit_approval_date: ~U[2024-01-15 00:00:00Z],
+               permit_expiration_date: ~U[2025-01-15 00:00:00Z],
+               date_notice_of_intent_sent: nil
+             }
+    end
   end
 end
