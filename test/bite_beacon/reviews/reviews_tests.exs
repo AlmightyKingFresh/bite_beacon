@@ -277,7 +277,7 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
     end
 
     test "update_review/2 returns error if review does not exist" do
-      assert {:error, :nonexistent_review} ==
+      assert {:error, :review_not_found} ==
                Reviews.update_review(
                  %Review{
                    id: 999,

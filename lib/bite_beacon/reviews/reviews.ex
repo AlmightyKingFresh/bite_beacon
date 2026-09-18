@@ -50,13 +50,13 @@ defmodule BiteBeacon.Reviews.Reviews do
   """
 
   @spec update_review(Review.t(), map()) ::
-          {:ok, Review.t()} | {:error, Ecto.Changeset.t() | :nonexistent_review}
+          {:ok, Review.t()} | {:error, Ecto.Changeset.t() | :review_not_found}
   def update_review(%Review{} = review, attrs) do
     review
     |> Review.review_changeset(attrs)
     |> Repo.update()
   rescue
-    Ecto.StaleEntryError -> {:error, :nonexistent_review}
+    Ecto.StaleEntryError -> {:error, :review_not_found}
   end
 
   @doc """

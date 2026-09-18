@@ -530,4 +530,72 @@ defmodule BiteBeacon.VendorsTest do
       refute Vendor.valid_password?(vendor2, "password")
     end
   end
+
+  describe "check_permit_status/2" do
+    test "check_permit_status/2 returns {:ok, vendor} when permit status is updated" do
+      vendor = insert(:vendor, permit_status: "REQUESTED")
+
+      stub_response = %{
+        "permit_status" => "APPROVED",
+        "permit_approval_date" => "2024-01-15",
+        "permit_expiration_date" => "2025-01-15",
+        "date_notice_of_intent_sent" => nil
+      }
+
+      Req.Test.stub(VendorPermitStatusStub, fn conn ->
+        Req.Test.json(conn, stub_response)
+      end)
+
+      {:ok, updated_vendor} =
+        Vendors.check_permit_status(vendor, plug: {Req.Test, VendorPermitStatusStub})
+
+      assert updated_vendor.permit_status == "APPROVED"
+      assert updated_vendor.permit_approval_date == ~U[2024-01-15 00:00:00Z]
+      assert updated_vendor.permit_expiration_date == ~U[2025-01-15 00:00:00Z]
+    end
+
+    test "check_permit_status/2 returns {:error, reason} when API returns unexpected status" do
+      vendor = insert(:vendor, permit_status: "REQUESTED")
+
+      Req.Test.stub(VendorPermitStatusStub, fn conn ->
+        Plug.Conn.send_resp(conn, 404, "")
+      end)
+
+      {:error, {:unexpected_status, 404}} =
+        Vendors.check_permit_status(vendor, plug: {Req.Test, VendorPermitStatusStub})
+    end
+
+    test "check_permit_status/2 returns error tuple on transport failure" do
+      vendor = insert(:vendor)
+
+      Req.Test.stub(VendorPermitStatusTransportErrorStub, fn conn ->
+        Req.Test.transport_error(conn, :timeout)
+      end)
+
+      result =
+        Vendors.check_permit_status(vendor,
+          plug: {Req.Test, VendorPermitStatusTransportErrorStub}
+        )
+
+      assert {:error, _reason} = result
+    end
+  end
+
+  describe "parse_permit_status_response/1" do
+    test "parses a full response into atom-keyed attrs with real DateTimes" do
+      response = %{
+        "permit_status" => "APPROVED",
+        "permit_approval_date" => "2024-01-15",
+        "permit_expiration_date" => "2025-01-15",
+        "date_notice_of_intent_sent" => nil
+      }
+
+      assert Vendors.parse_permit_status_response(response) == %{
+               permit_status: "APPROVED",
+               permit_approval_date: ~U[2024-01-15 00:00:00Z],
+               permit_expiration_date: ~U[2025-01-15 00:00:00Z],
+               date_notice_of_intent_sent: nil
+             }
+    end
+  end
 end
