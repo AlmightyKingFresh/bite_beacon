@@ -12,10 +12,10 @@ defmodule BiteBeacon.Vendors.Vendors do
     Repo.all(Vendor)
   end
 
-  @spec get_vendor(Ecto.UUID.t()) :: %Vendor{} | nil
+  @spec get_vendor(Ecto.UUID.t()) :: Vendor.t() | nil
   def get_vendor(id), do: Repo.get(Vendor, id)
 
-  @spec get_vendor_by_email(String.t()) :: %Vendor{} | nil
+  @spec get_vendor_by_email(String.t()) :: Vendor.t() | nil
   def get_vendor_by_email(email) when is_binary(email) do
     Repo.get_by(Vendor, email: email)
   end
@@ -64,6 +64,70 @@ defmodule BiteBeacon.Vendors.Vendors do
     vendor
     |> Vendor.permit_id_changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Simulates checking a vendor's permit status against an external API,
+  parsing the response, and updating the vendor with any changes.
+
+  Accepts `req_options` so tests can inject a `Req.Test` stub without any
+  global app config — e.g. `check_permit_status(vendor, plug: {Req.Test, MyStub})`.
+  """
+  @spec check_permit_status(Vendor.t(), keyword()) ::
+          {:ok, Vendor.t()} | {:error, Ecto.Changeset.t() | term()}
+  def check_permit_status(%Vendor{} = vendor, req_options \\ []) do
+    request =
+      Req.new(
+        [base_url: "https://api.sfgov.org", url: "/permits/#{vendor.permit_id}/status"] ++
+          req_options
+      )
+
+    case Req.get(request) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        attrs = parse_permit_status_response(body)
+
+        vendor
+        |> Vendor.permit_status_changeset(Map.take(attrs, [:permit_status]))
+        |> Ecto.Changeset.merge(
+          Vendor.permit_metadata_changeset(vendor, Map.drop(attrs, [:permit_status]))
+        )
+        |> Repo.update()
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:unexpected_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Parses a raw, string-keyed permit-status API response into atom-keyed
+  attrs ready for `Vendor.permit_status_changeset/2` and
+  `Vendor.permit_metadata_changeset/2`.
+  """
+  @spec parse_permit_status_response(map()) :: map()
+  def parse_permit_status_response(%{
+        "permit_status" => status,
+        "permit_approval_date" => approval,
+        "permit_expiration_date" => expiration,
+        "date_notice_of_intent_sent" => notice_sent
+      }) do
+    %{
+      permit_status: status,
+      permit_approval_date: parse_date(approval),
+      permit_expiration_date: parse_date(expiration),
+      date_notice_of_intent_sent: parse_date(notice_sent)
+    }
+  end
+
+  defp parse_date(nil), do: nil
+
+  defp parse_date(date_string) when is_binary(date_string) do
+    case Date.from_iso8601(date_string) do
+      {:ok, date} -> DateTime.new!(date, ~T[00:00:00])
+      {:error, _} -> nil
+    end
   end
 
   @spec apply_vendor_email(Vendor.t(), String.t(), map()) ::
