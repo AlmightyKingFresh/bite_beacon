@@ -94,6 +94,49 @@ defmodule BiteBeacon.Reviews.Reviews do
     end
   end
 
+  @doc """
+  Gets the `limit` highest-rated reviews for a given facility, most recent first as a tiebreaker.
+  """
+  @spec get_top_five_reviews_for_facility(integer()) :: [Review.t()]
+  def get_top_five_reviews_for_facility(facility_id) do
+    Repo.all(
+      from r in Review,
+        where:
+          r.facility_id == ^facility_id and
+            not is_nil(r.body),
+        order_by: [desc: r.rating, desc: r.inserted_at],
+        limit: ^5
+    )
+  end
+
+  @doc """
+  Gets the `limit` lowest-rated reviews for a given facility, most recent first as a tiebreaker.
+  """
+  @spec get_five_worst_reviews_for_facility(integer()) :: [Review.t()]
+  def get_five_worst_reviews_for_facility(facility_id) do
+    Repo.all(
+      from r in Review,
+        where:
+          r.facility_id == ^facility_id and
+            not is_nil(r.body),
+        order_by: [asc: r.rating, desc: r.inserted_at],
+        limit: ^5
+    )
+  end
+
+  @doc """
+  Gets the `limit` most recently created reviews for a given facility.
+  """
+  @spec get_five_most_recent_reviews_for_facility(integer()) :: [Review.t()]
+  def get_five_most_recent_reviews_for_facility(facility_id) do
+    Repo.all(
+      from r in Review,
+        where:
+          r.facility_id == ^facility_id and
+            not is_nil(r.body),
+        order_by: [desc: r.inserted_at],
+        limit: ^5
+    )
   defp review_cooldown(%Review{updated_at: updated_at} = review) do
     hours_since_update = DateTime.diff(DateTime.utc_now(), updated_at, :hour)
 
