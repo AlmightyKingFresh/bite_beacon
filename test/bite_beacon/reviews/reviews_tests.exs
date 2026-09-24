@@ -263,7 +263,8 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
           user_id: user.id,
           facility_id: facility.id,
           rating: 5,
-          body: "Great food!"
+          body: "Great food! Better the 2nd time!",
+          updated_at: DateTime.utc_now() |> DateTime.add(-45, :hour)
         )
 
       {:ok, updated_review} = Reviews.update_review(review, %{body: "Better the 2nd time!"})
@@ -280,10 +281,18 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
                    id: 999,
                    facility_id: 1_234_567,
                    user_id: Ecto.UUID.generate(),
-                   rating: 2
+                   rating: 2,
+                   updated_at: DateTime.utc_now() |> DateTime.add(-25, :hour)
                  },
                  %{body: "Non-existent review"}
                )
+    end
+
+    test "update_review/2 returns error if it's been less than 24 hours since the last update" do
+      review = insert(:review)
+
+      assert {:error, :too_soon_since_last_review} ==
+               Reviews.update_review(review, %{body: "Updated review"})
     end
 
     test "delete_review/1 deletes an existing review", %{

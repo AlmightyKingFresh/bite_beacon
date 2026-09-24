@@ -47,14 +47,19 @@ defmodule BiteBeacon.Reviews.Reviews do
 
   @doc """
   Updates a review.
+  A user can update their review of a facility,
+  but not if it's been less than 24 hours since the last review/update.
   """
 
   @spec update_review(Review.t(), map()) ::
-          {:ok, Review.t()} | {:error, Ecto.Changeset.t() | :review_not_found}
+          {:ok, Review.t()}
+          | {:error, Ecto.Changeset.t() | :review_not_found | :too_soon_since_last_review}
   def update_review(%Review{} = review, attrs) do
-    review
-    |> Review.review_changeset(attrs)
-    |> Repo.update()
+    with {:ok, review} <- review_cooldown(review) do
+      review
+      |> Review.review_changeset(attrs)
+      |> Repo.update()
+    end
   rescue
     Ecto.StaleEntryError -> {:error, :review_not_found}
   end
@@ -132,5 +137,13 @@ defmodule BiteBeacon.Reviews.Reviews do
         order_by: [desc: r.inserted_at],
         limit: ^5
     )
+  defp review_cooldown(%Review{updated_at: updated_at} = review) do
+    hours_since_update = DateTime.diff(DateTime.utc_now(), updated_at, :hour)
+
+    if hours_since_update < 24 do
+      {:error, :too_soon_since_last_review}
+    else
+      {:ok, review}
+    end
   end
 end
