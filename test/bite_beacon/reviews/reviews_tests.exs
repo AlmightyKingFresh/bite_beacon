@@ -134,10 +134,7 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
       assert Repo.get_by!(Review, facility_id: facility.id) == review
     end
 
-    test "create_review/1 inserts nothing if the data isn't valid", %{
-      user: user,
-      facility: facility
-    } do
+    test "create_review/1 inserts nothing if the data isn't valid" do
       attrs = %{
         user_id: Ecto.UUID.generate(),
         facility_id: "22",
@@ -335,6 +332,384 @@ defmodule BiteBeacon.Reviews.ReviewsTests do
     } do
       average_rating = Reviews.get_rating_average_for_facility(facility.id)
       assert average_rating == nil
+    end
+
+    test "get_rating_average_for_facility/1 returns nil if the facility does not exist" do
+      average_rating = Reviews.get_rating_average_for_facility(-1)
+      assert average_rating == nil
+    end
+
+    test "get_five_most_recent_reviews_for_facility/1 returns the five most recent reviews for a given facility",
+         %{
+           user: user,
+           facility: facility
+         } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+      user4 = insert(:user)
+      user5 = insert(:user)
+      user6 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 4,
+          body: "Good food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          body: "Average food!",
+          rating: 3,
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          body: "Great food!",
+          rating: 4,
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      review4 =
+        insert(:review,
+          user_id: user4.id,
+          facility_id: facility.id,
+          body: "Excellent food!",
+          rating: 5,
+          inserted_at: ~N[2023-01-04 00:00:00]
+        )
+
+      review5 =
+        insert(:review,
+          user_id: user5.id,
+          facility_id: facility.id,
+          body: "Not good!",
+          rating: 2,
+          inserted_at: ~N[2023-01-05 00:00:00]
+        )
+
+      review6 =
+        insert(:review,
+          user_id: user6.id,
+          facility_id: facility.id,
+          body: "Terrible food!",
+          rating: 1,
+          inserted_at: ~N[2023-01-06 00:00:00]
+        )
+
+      recent_reviews = Reviews.get_five_most_recent_reviews_for_facility(facility.id)
+
+      assert review1 not in recent_reviews
+      assert recent_reviews == [review6, review5, review4, review3, review2]
+    end
+
+    test "get_five_most_recent_reviews_for_facility/1 returns empty list if no reviews exist for the facility",
+         %{
+           facility: facility
+         } do
+      recent_reviews = Reviews.get_five_most_recent_reviews_for_facility(facility.id)
+      assert recent_reviews == []
+    end
+
+    test "get_five_most_recent_reviews_for_facility/1 returns empty list if the facility does not exist" do
+      recent_reviews = Reviews.get_five_most_recent_reviews_for_facility(-1)
+      assert recent_reviews == []
+    end
+
+    test "get_five_most_recent_reviews_for_facility/1 returns only reviews with non-nil bodies",
+         %{
+           user: user,
+           facility: facility
+         } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 4,
+          body: "Good food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          body: nil,
+          rating: 3,
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          body: "Great food!",
+          rating: 4,
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      recent_reviews = Reviews.get_five_most_recent_reviews_for_facility(facility.id)
+
+      assert review2 not in recent_reviews
+      assert recent_reviews == [review3, review1]
+    end
+
+    test "get_top_five_reviews_for_facility/1 returns the five highest-rated reviews for a given facility, most recent first as a tiebreaker",
+         %{
+           user: user,
+           facility: facility
+         } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+      user4 = insert(:user)
+      user5 = insert(:user)
+      user6 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 5,
+          body: "Excellent food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          rating: 4,
+          body: "Good food!",
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          rating: 5,
+          body: "Great food!",
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      review4 =
+        insert(:review,
+          user_id: user4.id,
+          facility_id: facility.id,
+          rating: 3,
+          body: "Average food!",
+          inserted_at: ~N[2023-01-04 00:00:00]
+        )
+
+      review5 =
+        insert(:review,
+          user_id: user5.id,
+          facility_id: facility.id,
+          rating: 2,
+          body: "Not good!",
+          inserted_at: ~N[2023-01-05 00:00:00]
+        )
+
+      review6 =
+        insert(:review,
+          user_id: user6.id,
+          facility_id: facility.id,
+          rating: 5,
+          body: "Terrible food!",
+          inserted_at: ~N[2023-01-06 00:00:00]
+        )
+
+      top_reviews = Reviews.get_top_five_reviews_for_facility(facility.id)
+
+      assert review5 not in top_reviews
+      assert top_reviews == [review6, review3, review1, review2, review4]
+    end
+
+    test "get_top_five_reviews_for_facility/1 returns empty list if no reviews exist for the facility",
+         %{
+           facility: facility
+         } do
+      top_reviews = Reviews.get_top_five_reviews_for_facility(facility.id)
+      assert top_reviews == []
+    end
+
+    test "get_top_five_reviews_for_facility/1 returns empty list if the facility does not exist" do
+      top_reviews = Reviews.get_top_five_reviews_for_facility(-1)
+      assert top_reviews == []
+    end
+
+    test "get_top_five_reviews_for_facility/1 returns only reviews with non-nil bodies", %{
+      user: user,
+      facility: facility
+    } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 5,
+          body: "Excellent food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          rating: 4,
+          body: nil,
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          rating: 5,
+          body: "Great food!",
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      top_reviews = Reviews.get_top_five_reviews_for_facility(facility.id)
+
+      assert review2 not in top_reviews
+      assert top_reviews == [review3, review1]
+    end
+
+    test "get_five_worst_reviews_for_facility/1 returns the five lowest-rated reviews for a given facility, most recent first as a tiebreaker",
+         %{
+           user: user,
+           facility: facility
+         } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+      user4 = insert(:user)
+      user5 = insert(:user)
+      user6 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 1,
+          body: "Terrible food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          rating: 2,
+          body: "Not good!",
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          rating: 1,
+          body: "Awful food!",
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      review4 =
+        insert(:review,
+          user_id: user4.id,
+          facility_id: facility.id,
+          rating: 3,
+          body: "Average food!",
+          inserted_at: ~N[2023-01-04 00:00:00]
+        )
+
+      review5 =
+        insert(:review,
+          user_id: user5.id,
+          facility_id: facility.id,
+          rating: 4,
+          body: "Good food!",
+          inserted_at: ~N[2023-01-05 00:00:00]
+        )
+
+      review6 =
+        insert(:review,
+          user_id: user6.id,
+          facility_id: facility.id,
+          rating: 1,
+          body: "Horrible food!",
+          inserted_at: ~N[2023-01-06 00:00:00]
+        )
+
+      worst_reviews = Reviews.get_five_worst_reviews_for_facility(facility.id)
+
+      assert review5 not in worst_reviews
+      assert worst_reviews == [review6, review3, review1, review2, review4]
+    end
+
+    test "get_five_worst_reviews_for_facility/1 returns empty list if no reviews exist for the facility",
+         %{
+           facility: facility
+         } do
+      worst_reviews = Reviews.get_five_worst_reviews_for_facility(facility.id)
+      assert worst_reviews == []
+    end
+
+    test "get_five_worst_reviews_for_facility/1 returns empty list if the facility does not exist" do
+      worst_reviews = Reviews.get_five_worst_reviews_for_facility(-1)
+      assert worst_reviews == []
+    end
+
+    test "get_five_worst_reviews_for_facility/1 returns only reviews with non-nil bodies", %{
+      user: user,
+      facility: facility
+    } do
+      user2 = insert(:user)
+      user3 = insert(:user)
+
+      review1 =
+        insert(:review,
+          user_id: user.id,
+          facility_id: facility.id,
+          rating: 1,
+          body: "Terrible food!",
+          inserted_at: ~N[2023-01-01 00:00:00]
+        )
+
+      review2 =
+        insert(:review,
+          user_id: user2.id,
+          facility_id: facility.id,
+          rating: 2,
+          body: nil,
+          inserted_at: ~N[2023-01-02 00:00:00]
+        )
+
+      review3 =
+        insert(:review,
+          user_id: user3.id,
+          facility_id: facility.id,
+          rating: 1,
+          body: "Awful food!",
+          inserted_at: ~N[2023-01-03 00:00:00]
+        )
+
+      worst_reviews = Reviews.get_five_worst_reviews_for_facility(facility.id)
+
+      assert review2 not in worst_reviews
+      assert worst_reviews == [review3, review1]
     end
   end
 end
