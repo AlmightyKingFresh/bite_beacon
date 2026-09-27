@@ -170,9 +170,7 @@ defmodule BiteBeacon.Vendors.Vendors do
 
   ## Session
 
-  @doc """
-  Generates a session token.
-  """
+
 
   # def generate_vendor_session_token(vendor) do
   #   {token, vendor_token} = VendorToken.build_session_token(vendor)

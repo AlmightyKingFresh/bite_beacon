@@ -77,7 +77,7 @@ defmodule BiteBeacon.Users.User do
     |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/,
       message:
-        " must have a capital letter, a lowercase letter, and adigit or punctuation character"
+        "must have a capital letter, a lowercase letter, and a digit or punctuation character"
     )
     |> maybe_hash_password(opts)
   end
