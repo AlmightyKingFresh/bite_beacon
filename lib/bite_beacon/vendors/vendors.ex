@@ -170,8 +170,6 @@ defmodule BiteBeacon.Vendors.Vendors do
 
   ## Session
 
-
-
   # def generate_vendor_session_token(vendor) do
   #   {token, vendor_token} = VendorToken.build_session_token(vendor)
   #   Repo.insert!(vendor_token)
@@ -223,13 +221,6 @@ defmodule BiteBeacon.Vendors.Vendors do
   #   end
   # end
 
-  @doc """
-  Confirms a vendor by the given token.
-
-  If the token matches, the vendor account is marked as confirmed
-  and the token is deleted.
-  """
-
   # def confirm_vendor(token) do
   #   with {:ok, query} <- VendorToken.verify_email_token_query(token, "confirm"),
   #        %Vendor{} = vendor <- Repo.one(query),
@@ -262,18 +253,6 @@ defmodule BiteBeacon.Vendors.Vendors do
   #   )
   # end
 
-  @doc """
-  Gets the vendor by reset password token.
-
-  ## Examples
-
-      iex> get_vendor_by_reset_password_token("validtoken")
-      %Vendor{}
-
-      iex> get_vendor_by_reset_password_token("invalidtoken")
-      nil
-
-  """
   #   def get_vendor_by_reset_password_token(token) do
   #     with {:ok, query} <- VendorToken.verify_email_token_query(token, "reset_password"),
   #          %Vendor{} = vendor <- Repo.one(query) do
