@@ -143,7 +143,7 @@ defmodule BiteBeacon.UsersTest do
 
       assert %{
                password: [
-                 " must have a capital letter, a lowercase letter, and adigit or punctuation character"
+                 "must have a capital letter, a lowercase letter, and a digit or punctuation character"
                ]
              } = errors_on(changeset)
     end

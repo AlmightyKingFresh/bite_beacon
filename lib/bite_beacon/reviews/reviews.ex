@@ -137,6 +137,8 @@ defmodule BiteBeacon.Reviews.Reviews do
         order_by: [desc: r.inserted_at],
         limit: ^5
     )
+  end
+
   defp review_cooldown(%Review{updated_at: updated_at} = review) do
     hours_since_update = DateTime.diff(DateTime.utc_now(), updated_at, :hour)
 
