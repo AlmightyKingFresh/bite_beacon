@@ -13,7 +13,7 @@ defmodule BiteBeaconWeb.FacilityLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:facility, Facilities.get_facility!(id))}
+     |> assign(:facility, Facilities.get_facility(id))}
   end
 
   defp page_title(:show), do: "Show Facility"
